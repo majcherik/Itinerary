@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRightLeft, RefreshCw, X } from 'lucide-react';
+import CustomDropdown from './CustomDropdown';
 
 const CurrencyCalculator = ({ onClose }) => {
     const [currencies, setCurrencies] = useState({});
@@ -79,7 +80,7 @@ const CurrencyCalculator = ({ onClose }) => {
                             type="number"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
-                            className="w-full bg-bg-secondary border-2 border-transparent focus:border-accent-primary focus:bg-white rounded-xl px-4 py-4 text-2xl font-bold outline-none transition-all placeholder:text-text-secondary/50"
+                            className="w-full bg-white border border-border-color focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20 rounded-xl px-4 py-4 text-2xl font-bold outline-none transition-all placeholder:text-text-secondary/50 shadow-sm"
                             placeholder="0.00"
                         />
                     </div>
@@ -87,18 +88,11 @@ const CurrencyCalculator = ({ onClose }) => {
                     <div className="grid grid-cols-[1fr,auto,1fr] gap-4 items-end">
                         <div className="flex flex-col gap-2">
                             <label className="text-xs font-bold text-text-secondary uppercase tracking-wider">From</label>
-                            <div className="relative">
-                                <select
-                                    value={fromCurrency}
-                                    onChange={(e) => setFromCurrency(e.target.value)}
-                                    className="w-full bg-bg-secondary border-2 border-transparent focus:border-accent-primary rounded-xl px-4 py-3 text-lg font-bold outline-none appearance-none cursor-pointer transition-all"
-                                >
-                                    <option value="USD">USD</option>
-                                    {Object.entries(currencies).map(([code, name]) => (
-                                        <option key={code} value={code}>{code}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            <CustomDropdown
+                                options={currencies}
+                                value={fromCurrency}
+                                onChange={setFromCurrency}
+                            />
                         </div>
 
                         <button
@@ -111,18 +105,11 @@ const CurrencyCalculator = ({ onClose }) => {
 
                         <div className="flex flex-col gap-2">
                             <label className="text-xs font-bold text-text-secondary uppercase tracking-wider">To</label>
-                            <div className="relative">
-                                <select
-                                    value={toCurrency}
-                                    onChange={(e) => setToCurrency(e.target.value)}
-                                    className="w-full bg-bg-secondary border-2 border-transparent focus:border-accent-primary rounded-xl px-4 py-3 text-lg font-bold outline-none appearance-none cursor-pointer transition-all"
-                                >
-                                    <option value="EUR">EUR</option>
-                                    {Object.entries(currencies).map(([code, name]) => (
-                                        <option key={code} value={code}>{code}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            <CustomDropdown
+                                options={currencies}
+                                value={toCurrency}
+                                onChange={setToCurrency}
+                            />
                         </div>
                     </div>
 

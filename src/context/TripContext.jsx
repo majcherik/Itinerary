@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from './AuthContext';
 
 const TripContext = createContext();
 
@@ -11,119 +13,437 @@ export const useTrip = () => {
 };
 
 export const TripProvider = ({ children }) => {
-    const [trips, setTrips] = useState(() => {
-        const savedTrips = localStorage.getItem('trips');
-        return savedTrips ? JSON.parse(savedTrips) : [];
-    });
+    const { user } = useAuth();
+    const [trips, setTrips] = useState([]);
+    const [loading, setLoading] = useState(true);
 
+    // Fetch trips on mount or when user changes
     useEffect(() => {
-        localStorage.setItem('trips', JSON.stringify(trips));
-    }, [trips]);
+        if (user) {
+            fetchTrips();
+        } else {
+            setTrips([]);
+            setLoading(false);
+        }
+    }, [user]);
 
-    const addTrip = (trip) => {
-        setTrips((prevTrips) => [...prevTrips, { ...trip, wallet: [], packingList: [], documents: [] }]);
+    const fetchTrips = async () => {
+        setLoading(true);
+        try {
+            // Fetch trips with all related data
+            const { data, error } = await supabase
+                .from('trips')
+                .select(`
+                    *,
+                    itinerary:itinerary_items(*),
+                    packingList:packing_items(*),
+                    documents(*),
+                    wallet:tickets(*),
+                    accommodation(*),
+                    transport(*)
+                `)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setTrips(data || []);
+        } catch (error) {
+            console.error('Error fetching trips:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const addTrip = async (tripData) => {
+        try {
+            const { data, error } = await supabase
+                .from('trips')
+                .insert([{
+                    user_id: user.id,
+                    title: tripData.title,
+                    start_date: tripData.startDate,
+                    end_date: tripData.endDate,
+                    city: tripData.city,
+                    hero_image: tripData.heroImage
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+            // Add empty arrays for related tables to local state to avoid refetching immediately
+            setTrips(prev => [{ ...data, itinerary: [], packingList: [], documents: [], wallet: [], accommodation: [], transport: [] }, ...prev]);
+            return data;
+        } catch (error) {
+            console.error('Error adding trip:', error);
+            throw error;
+        }
+    };
+
+    const deleteTrip = async (id) => {
+        try {
+            const { error } = await supabase
+                .from('trips')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            setTrips(prev => prev.filter(t => t.id !== Number(id)));
+        } catch (error) {
+            console.error('Error deleting trip:', error);
+        }
+    };
+
+    const updateTrip = async (id, updates) => {
+        try {
+            // Map frontend keys to DB keys if necessary (e.g. startDate -> start_date)
+            // For now assuming updates object keys match DB columns or are handled before calling
+            // But typically we might need mapping. Let's assume the caller handles mapping for now or we map common ones.
+            const dbUpdates = {};
+            if (updates.title) dbUpdates.title = updates.title;
+            if (updates.startDate) dbUpdates.start_date = updates.startDate;
+            if (updates.endDate) dbUpdates.end_date = updates.endDate;
+            if (updates.city) dbUpdates.city = updates.city;
+            if (updates.heroImage) dbUpdates.hero_image = updates.heroImage;
+
+            const { data, error } = await supabase
+                .from('trips')
+                .update(dbUpdates)
+                .eq('id', id)
+                .select()
+                .single();
+
+            if (error) throw error;
+            setTrips(prev => prev.map(t => t.id === Number(id) ? { ...t, ...data } : t));
+        } catch (error) {
+            console.error('Error updating trip:', error);
+        }
     };
 
     const getTrip = (id) => {
         return trips.find((t) => t.id === Number(id));
     };
 
-    const deleteTrip = (id) => {
-        setTrips((prevTrips) => prevTrips.filter((t) => t.id !== Number(id)));
+    // --- Sub-items Helpers ---
+
+    const addItineraryItem = async (tripId, item) => {
+        try {
+            const { data, error } = await supabase
+                .from('itinerary_items')
+                .insert([{
+                    trip_id: tripId,
+                    // Schema: day date, time time.
+                    // Frontend sends: day (number), date (string), description, title, cost.
+                    // We map frontend 'date' -> DB 'day'.
+                    day: item.date,
+                    activity: item.title,
+                    notes: item.description,
+                    cost: item.cost,
+                    time: item.time || null
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            // Update local state
+            // We need to map back DB fields to frontend fields for consistency
+            const newItem = {
+                id: data.id,
+                day: item.day, // Keep the day number from frontend for UI sorting if needed, or recalculate
+                date: data.day,
+                title: data.activity,
+                description: data.notes,
+                cost: data.cost,
+                time: data.time
+            };
+
+            setTrips(prev => prev.map(t => t.id === Number(tripId) ? {
+                ...t,
+                itinerary: [...(t.itinerary || []), newItem]
+            } : t));
+        } catch (error) {
+            console.error('Error adding itinerary item:', error);
+        }
     };
 
-    const updateTrip = (id, updates) => {
-        setTrips((prevTrips) => prevTrips.map((t) => t.id === Number(id) ? { ...t, ...updates } : t));
+    const deleteItineraryItem = async (tripId, itemId) => {
+        try {
+            const { error } = await supabase
+                .from('itinerary_items')
+                .delete()
+                .eq('id', itemId);
+
+            if (error) throw error;
+            setTrips(prev => prev.map(t => t.id === Number(tripId) ? {
+                ...t,
+                itinerary: t.itinerary.filter(i => i.id !== itemId)
+            } : t));
+        } catch (error) {
+            console.error('Error deleting itinerary item:', error);
+        }
     };
 
-    const addTicket = (tripId, ticket) => {
-        setTrips(trips.map(t => t.id === Number(tripId) ? { ...t, wallet: [...(t.wallet || []), ticket] } : t));
+    const addAccommodation = async (tripId, item) => {
+        try {
+            const { data, error } = await supabase
+                .from('accommodation')
+                .insert([{
+                    trip_id: tripId,
+                    name: item.name,
+                    address: item.address,
+                    check_in: item.checkIn,
+                    check_out: item.checkOut,
+                    // Mapping type to notes since schema lacks type column
+                    notes: `Type: ${item.type}. ${item.notes || ''}`,
+                    cost: item.cost
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            const newItem = {
+                id: data.id,
+                name: data.name,
+                address: data.address,
+                checkIn: data.check_in,
+                checkOut: data.check_out,
+                type: item.type, // Optimistic
+                cost: data.cost
+            };
+
+            setTrips(prev => prev.map(t => t.id === Number(tripId) ? {
+                ...t,
+                accommodation: [...(t.accommodation || []), newItem]
+            } : t));
+        } catch (error) {
+            console.error('Error adding accommodation:', error);
+        }
     };
 
-    const addPackingItem = (tripId, item) => {
-        setTrips(trips.map(t => t.id === Number(tripId) ? { ...t, packingList: [...(t.packingList || []), item] } : t));
+    const deleteAccommodation = async (tripId, itemId) => {
+        try {
+            const { error } = await supabase
+                .from('accommodation')
+                .delete()
+                .eq('id', itemId);
+
+            if (error) throw error;
+            setTrips(prev => prev.map(t => t.id === Number(tripId) ? {
+                ...t,
+                accommodation: t.accommodation.filter(i => i.id !== itemId)
+            } : t));
+        } catch (error) {
+            console.error('Error deleting accommodation:', error);
+        }
     };
 
-    const updatePackingItem = (tripId, itemId, updates) => {
-        setTrips(trips.map(t => t.id === Number(tripId) ? {
-            ...t,
-            packingList: t.packingList.map(item => item.id === itemId ? { ...item, ...updates } : item)
-        } : t));
+    const addTransport = async (tripId, item) => {
+        try {
+            const { data, error } = await supabase
+                .from('transport')
+                .insert([{
+                    trip_id: tripId,
+                    type: item.type,
+                    provider: item.number, // Mapping number to provider or notes? Schema: type, provider, departure_location...
+                    // Frontend: type, number, from, to, depart, arrive, cost.
+                    // Mapping: 
+                    // type -> type
+                    // number -> booking_reference (or provider?) Let's use booking_reference for number (flight number etc)
+                    booking_reference: item.number,
+                    departure_location: item.from,
+                    arrival_location: item.to,
+                    departure_time: item.depart,
+                    arrival_time: item.arrive,
+                    cost: item.cost
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            const newItem = {
+                id: data.id,
+                type: data.type,
+                number: data.booking_reference,
+                from: data.departure_location,
+                to: data.arrival_location,
+                depart: data.departure_time,
+                arrive: data.arrival_time,
+                cost: data.cost
+            };
+
+            setTrips(prev => prev.map(t => t.id === Number(tripId) ? {
+                ...t,
+                transport: [...(t.transport || []), newItem]
+            } : t));
+        } catch (error) {
+            console.error('Error adding transport:', error);
+        }
     };
 
-    const deletePackingItem = (tripId, itemId) => {
-        setTrips(trips.map(t => t.id === Number(tripId) ? {
-            ...t,
-            packingList: t.packingList.filter(item => item.id !== itemId)
-        } : t));
+    const deleteTransport = async (tripId, itemId) => {
+        try {
+            const { error } = await supabase
+                .from('transport')
+                .delete()
+                .eq('id', itemId);
+
+            if (error) throw error;
+            setTrips(prev => prev.map(t => t.id === Number(tripId) ? {
+                ...t,
+                transport: t.transport.filter(i => i.id !== itemId)
+            } : t));
+        } catch (error) {
+            console.error('Error deleting transport:', error);
+        }
     };
 
-    const addNote = (tripId, note) => {
-        setTrips(trips.map(t => t.id === Number(tripId) ? { ...t, documents: [...(t.documents || []), note] } : t));
+    const addTicket = async (tripId, ticket) => {
+        try {
+            const { data, error } = await supabase
+                .from('tickets')
+                .insert([{
+                    trip_id: tripId,
+                    type: ticket.type,
+                    provider: ticket.provider,
+                    reference_number: ticket.refNumber,
+                    departure_time: ticket.departs,
+                    arrival_time: ticket.arrives,
+                    notes: ticket.notes,
+                    file_url: ticket.file // Assuming file upload logic is handled elsewhere and we just get URL
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            const newItem = {
+                id: data.id,
+                type: data.type,
+                provider: data.provider,
+                refNumber: data.reference_number,
+                departs: data.departure_time,
+                arrives: data.arrival_time,
+                notes: data.notes,
+                file: data.file_url
+            };
+
+            setTrips(prev => prev.map(t => t.id === Number(tripId) ? {
+                ...t,
+                wallet: [...(t.wallet || []), newItem]
+            } : t));
+        } catch (error) {
+            console.error('Error adding ticket:', error);
+        }
     };
 
-    // New methods for Trip Details
-    const addItineraryItem = (tripId, item) => {
-        setTrips(trips.map(t => t.id === Number(tripId) ? { ...t, itinerary: [...(t.itinerary || []), item] } : t));
+    const addPackingItem = async (tripId, item) => {
+        try {
+            const { data, error } = await supabase
+                .from('packing_items')
+                .insert([{
+                    trip_id: tripId,
+                    item: item.text,
+                    category: item.category,
+                    is_packed: item.checked
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            const newItem = {
+                id: data.id,
+                text: data.item,
+                category: data.category,
+                checked: data.is_packed
+            };
+
+            setTrips(prev => prev.map(t => t.id === Number(tripId) ? {
+                ...t,
+                packingList: [...(t.packingList || []), newItem]
+            } : t));
+        } catch (error) {
+            console.error('Error adding packing item:', error);
+        }
     };
 
-    const deleteItineraryItem = (tripId, itemId) => {
-        // Assuming items might not have IDs initially, we might need to rely on index or add IDs. 
-        // For now, let's assume we'll add IDs to new items and existing mock data needs IDs if not present.
-        // The mock data has 'day' but not unique ID for the item itself. Let's use day/date combination or just filter by object ref if possible, 
-        // but for React state, ID is best. Let's assume we pass the item object or index. 
-        // Better: Let's add IDs to the mock data or generate them.
-        // For simplicity in this refactor, let's filter by a unique property or just index if we must, but ID is safer.
-        // Let's assume the caller provides a way to identify. 
-        // Actually, let's just use the item itself for removal if we don't have IDs, or add IDs to everything.
-        // Let's go with adding IDs to everything in the UI when creating.
-        setTrips(trips.map(t => t.id === Number(tripId) ? {
-            ...t,
-            itinerary: t.itinerary.filter(i => i !== itemId) // If itemId is the object itself or an ID. Let's assume ID.
-        } : t));
+    const updatePackingItem = async (tripId, itemId, updates) => {
+        try {
+            const dbUpdates = {};
+            if (updates.checked !== undefined) dbUpdates.is_packed = updates.checked;
+            // Add other fields if editable
+
+            const { data, error } = await supabase
+                .from('packing_items')
+                .update(dbUpdates)
+                .eq('id', itemId)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            setTrips(prev => prev.map(t => t.id === Number(tripId) ? {
+                ...t,
+                packingList: t.packingList.map(item => item.id === itemId ? { ...item, checked: data.is_packed } : item)
+            } : t));
+        } catch (error) {
+            console.error('Error updating packing item:', error);
+        }
     };
 
-    // Actually, let's make sure we can delete by index or ID. 
-    // To be safe and consistent, let's assume we will pass the *item object* to delete, or add IDs.
-    // Let's update the mock data to have IDs for itinerary, accommodation, transport to make this easier.
-    // For now, I will implement a generic delete that takes a filter function or ID.
-    // Let's stick to ID. I will update the mock data in the state initialization to ensure they have IDs? 
-    // Or just generate IDs on the fly? 
-    // Let's just use a simple filter: if the item has an ID, use it. If not, maybe use index?
-    // Let's try to use ID.
+    const deletePackingItem = async (tripId, itemId) => {
+        try {
+            const { error } = await supabase
+                .from('packing_items')
+                .delete()
+                .eq('id', itemId);
 
-    const deleteItineraryItemById = (tripId, itemId) => {
-        setTrips(trips.map(t => t.id === Number(tripId) ? {
-            ...t,
-            itinerary: t.itinerary.filter(i => i.id !== itemId)
-        } : t));
+            if (error) throw error;
+            setTrips(prev => prev.map(t => t.id === Number(tripId) ? {
+                ...t,
+                packingList: t.packingList.filter(item => item.id !== itemId)
+            } : t));
+        } catch (error) {
+            console.error('Error deleting packing item:', error);
+        }
     };
 
-    const addAccommodation = (tripId, item) => {
-        setTrips(trips.map(t => t.id === Number(tripId) ? { ...t, accommodation: [...(t.accommodation || []), item] } : t));
-    };
+    const addNote = async (tripId, note) => {
+        try {
+            const { data, error } = await supabase
+                .from('documents')
+                .insert([{
+                    trip_id: tripId,
+                    title: note.title,
+                    content: note.content,
+                    type: 'note'
+                }])
+                .select()
+                .single();
 
-    const deleteAccommodation = (tripId, itemId) => {
-        setTrips(trips.map(t => t.id === Number(tripId) ? {
-            ...t,
-            accommodation: t.accommodation.filter(i => i.id !== itemId)
-        } : t));
-    };
+            if (error) throw error;
 
-    const addTransport = (tripId, item) => {
-        setTrips(trips.map(t => t.id === Number(tripId) ? { ...t, transport: [...(t.transport || []), item] } : t));
-    };
+            const newItem = {
+                id: data.id,
+                title: data.title,
+                content: data.content,
+                date: new Date(data.created_at).toLocaleDateString()
+            };
 
-    const deleteTransport = (tripId, itemId) => {
-        setTrips(trips.map(t => t.id === Number(tripId) ? {
-            ...t,
-            transport: t.transport.filter(i => i.id !== itemId)
-        } : t));
+            setTrips(prev => prev.map(t => t.id === Number(tripId) ? {
+                ...t,
+                documents: [...(t.documents || []), newItem]
+            } : t));
+        } catch (error) {
+            console.error('Error adding note:', error);
+        }
     };
 
     return (
         <TripContext.Provider value={{
             trips,
+            loading,
             addTrip,
             deleteTrip,
             updateTrip,
@@ -134,7 +454,7 @@ export const TripProvider = ({ children }) => {
             deletePackingItem,
             addNote,
             addItineraryItem,
-            deleteItineraryItem: deleteItineraryItemById,
+            deleteItineraryItem,
             addAccommodation,
             deleteAccommodation,
             addTransport,

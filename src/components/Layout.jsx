@@ -1,12 +1,11 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import Navbar from './Navbar';
 
 const Layout = ({ children }) => {
     const location = useLocation();
 
     return (
-        <div style={{ minHeight: '100vh', paddingBottom: '80px' }}>
+        <div style={{ minHeight: '100vh', paddingBottom: '100px' }}>
             <header style={{
                 padding: '1.5rem 0',
                 borderBottom: '1px solid var(--border-color)',
@@ -25,7 +24,6 @@ const Layout = ({ children }) => {
             <main key={location.pathname} className="container animate-fade-in">
                 {children}
             </main>
-            <Navbar />
         </div>
     );
 };
