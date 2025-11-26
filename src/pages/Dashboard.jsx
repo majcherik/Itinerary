@@ -50,16 +50,11 @@ const Dashboard = () => {
             });
         } else {
             const newTrip = {
-                id: Date.now(),
-                destination,
-                dates: dateString,
-                image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=1000',
-                itinerary: [],
-                accommodation: [],
-                transport: [],
-                wallet: [],
-                packingList: [],
-                documents: []
+                title: destination,
+                city: destination, // Using destination for city as well for now
+                startDate: startDate,
+                endDate: endDate,
+                heroImage: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=1000'
             };
             addTrip(newTrip);
         }
