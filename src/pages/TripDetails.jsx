@@ -315,31 +315,26 @@ const TripDetails = () => {
 
     return (
         <div className="flex flex-col gap-6">
-            <div
-                className="relative h-16 rounded-xl overflow-hidden"
-            >
-                <img src={trip.hero_image || trip.image} alt={trip.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                <div className="absolute bottom-3 left-6 text-white flex items-center gap-2">
-                    <h1 className="text-2xl font-bold mb-1">{trip.title}</h1>
+            {/* Header Section with Small Image on Left */}
+            <div className="flex items-center gap-4">
+                <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0">
+                    <img src={trip.hero_image || trip.image} alt={trip.title} className="w-full h-full object-cover" />
                 </div>
-            </div>
-
-
-            <div className="flex justify-between items-center bg-bg-card p-4 rounded-xl border border-border-color shadow-sm">
-                <div>
-                    <h2 className="text-lg font-bold">Trip Overview</h2>
-                    <p className="text-text-secondary text-sm">{dateString}</p>
-                    <button
-                        onClick={() => setIsCalculatorOpen(true)}
-                        className="btn btn-outline flex items-center gap-2 mt-3 text-sm"
-                    >
-                        <Clock size={16} /> Currency Calculator
-                    </button>
+                <div className="flex-1">
+                    <h1 className="text-3xl font-bold mb-1">{trip.title}</h1>
+                    <p className="text-text-secondary text-sm mb-2">{dateString}</p>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setIsCalculatorOpen(true)}
+                            className="btn btn-sm btn-outline flex items-center gap-2 text-xs"
+                        >
+                            <Clock size={14} /> Currency Calculator
+                        </button>
+                    </div>
                 </div>
-                <div className="text-right flex flex-col items-end gap-1"> {/* Modified for CurrencyConverter */}
+                <div className="text-right flex flex-col items-end gap-1">
                     <p className="text-text-secondary text-xs uppercase tracking-wider font-bold">Total Cost</p>
-                    <div className="flex items-center gap-3"> {/* Added wrapper for currency display and converter */}
+                    <div className="flex items-center gap-3">
                         <p className="text-2xl font-bold text-accent-primary">
                             {currency === 'USD' ? '$' : ''}
                             {convertedTotalCost.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}

@@ -110,9 +110,14 @@ const Wallet = () => {
                                 onChange={(e) => setNewTicket({ ...newTicket, type: e.target.value })}
                             >
                                 <option value="Flight">Flight</option>
-                                <option value="Attraction">Attraction</option>
                                 <option value="Train">Train</option>
                                 <option value="Bus">Bus</option>
+                                <option value="Attraction">Attraction</option>
+                                <option value="Concert">Concert</option>
+                                <option value="Event">Event</option>
+                                <option value="Hotel Reservation">Hotel Reservation</option>
+                                <option value="Restaurant Reservation">Restaurant Reservation</option>
+                                <option value="Other">Other</option>
                             </select>
                         </div>
 
@@ -131,9 +136,8 @@ const Wallet = () => {
                             <div className="flex flex-col gap-2">
                                 <label className="text-sm font-medium">Date</label>
                                 <input
-                                    type="text"
+                                    type="date"
                                     className="input"
-                                    placeholder="Oct 15, 2025"
                                     value={newTicket.date}
                                     onChange={(e) => setNewTicket({ ...newTicket, date: e.target.value })}
                                 />
@@ -141,9 +145,8 @@ const Wallet = () => {
                             <div className="flex flex-col gap-2">
                                 <label className="text-sm font-medium">Time</label>
                                 <input
-                                    type="text"
+                                    type="time"
                                     className="input"
-                                    placeholder="12:00 PM"
                                     value={newTicket.time}
                                     onChange={(e) => setNewTicket({ ...newTicket, time: e.target.value })}
                                 />
