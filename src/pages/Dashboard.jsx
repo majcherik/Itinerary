@@ -82,39 +82,46 @@ const Dashboard = () => {
             </div>
 
             <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {trips.map((trip) => (
-                    <Link to={`/trip/${trip.id}`} key={trip.id} className="card p-0 overflow-hidden hover:shadow-lg transition-all group relative">
-                        {/* Action Buttons */}
-                        <div className="absolute top-2 right-2 flex gap-2 z-10">
-                            <button
-                                onClick={(e) => openEditModal(trip, e)}
-                                className="p-2 bg-white/90 rounded-full text-accent-primary hover:bg-accent-primary hover:text-white shadow-md transition-colors"
-                                title="Edit Trip"
-                            >
-                                <Edit2 size={18} />
-                            </button>
-                            <button
-                                onClick={(e) => handleDeleteTrip(trip.id, e)}
-                                className="p-2 bg-white/90 rounded-full text-danger hover:bg-danger hover:text-white shadow-md transition-colors"
-                                title="Delete Trip"
-                            >
-                                <Trash2 size={18} />
-                            </button>
-                        </div>
+                {trips.map((trip) => {
+                    const startDate = new Date(trip.start_date);
+                    const endDate = new Date(trip.end_date);
+                    const options = { month: 'short', day: 'numeric' };
+                    const dateString = `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}, ${endDate.getFullYear()}`;
 
-                        <div className="h-32 overflow-hidden relative">
-                            <img src={trip.image} alt={trip.destination} className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                        </div>
-                        <div className="p-4">
-                            <h3 className="text-xl font-bold mb-2 text-text-primary">{trip.destination}</h3>
-                            <div className="flex items-center gap-2 text-text-secondary text-sm">
-                                <Calendar size={16} />
-                                <span>{trip.dates}</span>
+                    return (
+                        <Link to={`/trip/${trip.id}`} key={trip.id} className="card p-0 overflow-hidden hover:shadow-lg transition-all group relative">
+                            {/* Action Buttons */}
+                            <div className="absolute top-2 right-2 flex gap-2 z-10">
+                                <button
+                                    onClick={(e) => openEditModal(trip, e)}
+                                    className="p-2 bg-white/90 rounded-full text-accent-primary hover:bg-accent-primary hover:text-white shadow-md transition-colors"
+                                    title="Edit Trip"
+                                >
+                                    <Edit2 size={18} />
+                                </button>
+                                <button
+                                    onClick={(e) => handleDeleteTrip(trip.id, e)}
+                                    className="p-2 bg-white/90 rounded-full text-danger hover:bg-danger hover:text-white shadow-md transition-colors"
+                                    title="Delete Trip"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
                             </div>
-                        </div>
-                    </Link>
-                ))}
+
+                            <div className="h-32 overflow-hidden relative">
+                                <img src={trip.hero_image || trip.image} alt={trip.title} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                            </div>
+                            <div className="p-4">
+                                <h3 className="text-xl font-bold mb-2 text-text-primary">{trip.title}</h3>
+                                <div className="flex items-center gap-2 text-text-secondary text-sm">
+                                    <Calendar size={16} />
+                                    <span>{dateString}</span>
+                                </div>
+                            </div>
+                        </Link>
+                    );
+                })}
             </div>
 
             {isModalOpen && (

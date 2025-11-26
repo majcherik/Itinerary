@@ -239,12 +239,12 @@ const TripDetails = () => {
                         Visualize your trip itinerary and saved locations on an interactive map.
                     </p>
                     <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trip.destination)}`}
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trip.city || trip.title)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn btn-primary inline-flex items-center gap-2"
                     >
-                        <MapPin size={18} /> Open {trip.destination} in Google Maps
+                        <MapPin size={18} /> Open {trip.city || trip.title} in Google Maps
                     </a>
                 </div>
             </div>
@@ -308,15 +308,20 @@ const TripDetails = () => {
 
     const convertedTotalCost = totalCost * exchangeRate;
 
+    const startDate = trip ? new Date(trip.start_date) : null;
+    const endDate = trip ? new Date(trip.end_date) : null;
+    const options = { month: 'short', day: 'numeric' };
+    const dateString = trip ? `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}, ${endDate.getFullYear()}` : '';
+
     return (
         <div className="flex flex-col gap-6">
             <div
                 className="relative h-16 rounded-xl overflow-hidden"
             >
-                <img src={trip.image} alt={trip.destination} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                <img src={trip.hero_image || trip.image} alt={trip.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                 <div className="absolute bottom-3 left-6 text-white flex items-center gap-2">
-                    <h1 className="text-2xl font-bold mb-1">{trip.destination}</h1>
+                    <h1 className="text-2xl font-bold mb-1">{trip.title}</h1>
                 </div>
             </div>
 
@@ -324,7 +329,7 @@ const TripDetails = () => {
             <div className="flex justify-between items-center bg-bg-card p-4 rounded-xl border border-border-color shadow-sm">
                 <div>
                     <h2 className="text-lg font-bold">Trip Overview</h2>
-                    <p className="text-text-secondary text-sm">{trip.dates}</p>
+                    <p className="text-text-secondary text-sm">{dateString}</p>
                     <button
                         onClick={() => setIsCalculatorOpen(true)}
                         className="btn btn-outline flex items-center gap-2 mt-3 text-sm"
