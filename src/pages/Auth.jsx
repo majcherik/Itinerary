@@ -102,6 +102,7 @@ const Auth = () => {
                             {isLogin ? 'Sign Up' : 'Sign In'}
                         </button>
                     </p>
+                    <p className="text-xs text-text-secondary mt-4 opacity-50">v1.0.1</p>
                 </div>
             </div>
         </div>
