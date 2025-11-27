@@ -1,26 +1,46 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin, Loader2 } from 'lucide-react';
 import { Input } from './ui/input';
 import { useOnClickOutside } from '../hooks/use-on-click-outside';
-import countriesData from '../data/countries.json';
+import { getCountries } from '@yusifaliyevpro/countries';
 
 const LocationAutocomplete = ({ value, onChange, placeholder = "Where to?" }) => {
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [countries, setCountries] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
     const wrapperRef = useRef(null);
 
     useOnClickOutside(wrapperRef, () => setShowSuggestions(false));
 
     useEffect(() => {
-        if (value.length > 1 && showSuggestions) {
-            const filtered = countriesData.filter(country =>
+        const fetchCountriesData = async () => {
+            setIsLoading(true);
+            try {
+                const data = await getCountries({});
+                if (data) {
+                    setCountries(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch countries:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchCountriesData();
+    }, []);
+
+    useEffect(() => {
+        if (value.length > 1 && showSuggestions && countries.length > 0) {
+            const filtered = countries.filter(country =>
                 country.name.toLowerCase().includes(value.toLowerCase())
-            ).slice(0, 5); // Limit to 5 suggestions
+            ).slice(0, 5);
             setSuggestions(filtered);
         } else {
             setSuggestions([]);
         }
-    }, [value, showSuggestions]);
+    }, [value, showSuggestions, countries]);
 
     const handleChange = (e) => {
         onChange(e.target.value);
@@ -41,16 +61,20 @@ const LocationAutocomplete = ({ value, onChange, placeholder = "Where to?" }) =>
                     value={value}
                     onChange={handleChange}
                     onFocus={() => value.length > 1 && setShowSuggestions(true)}
-                    className="pl-10" // Make room for the icon
+                    className="pl-10"
                 />
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary h-4 w-4" />
+                {isLoading ? (
+                    <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary h-4 w-4 animate-spin" />
+                ) : (
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary h-4 w-4" />
+                )}
             </div>
 
             {showSuggestions && suggestions.length > 0 && (
                 <ul className="absolute z-50 w-full mt-1 bg-bg-card border border-border-color rounded-md shadow-lg max-h-60 overflow-auto">
                     {suggestions.map((country) => (
                         <li
-                            key={country.cca2}
+                            key={country.cca2 || country.name}
                             className="px-4 py-2 hover:bg-bg-secondary cursor-pointer flex items-center gap-2 text-sm"
                             onClick={() => handleSelect(country.name)}
                         >
