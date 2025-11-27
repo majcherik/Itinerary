@@ -58,78 +58,70 @@ const Auth = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-bg-primary p-4">
-            <Card className="w-full max-w-sm mx-auto">
+            <Card className="w-full max-w-md">
                 <CardHeader>
-                    <div className="flex justify-between items-start">
-                        <div className="grid gap-1">
-                            <CardTitle className="text-2xl">{isLogin ? 'Login' : 'Sign Up'}</CardTitle>
-                            <CardDescription>
-                                {isLogin ? 'Enter your email below to login to your account' : 'Enter your details below to create an account'}
-                            </CardDescription>
-                        </div>
-                        <Button variant="link" onClick={() => setIsLogin(!isLogin)} className="px-0 text-accent-primary font-bold">
-                            {isLogin ? 'Sign Up' : 'Login'}
-                        </Button>
-                    </div>
+                    <CardTitle>{isLogin ? 'Login to your account' : 'Create an account'}</CardTitle>
+                    <CardDescription>
+                        {isLogin ? 'Enter your email below to login to your account' : 'Enter your email below to create your account'}
+                    </CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit}>
-                        <div className="grid gap-4">
-                            {error && (
-                                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-sm" role="alert">
-                                    <span className="block sm:inline">{error}</span>
-                                </div>
-                            )}
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="m@example.com"
-                                    required
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
-                                    {isLogin && (
-                                        <Button variant="link" size="sm" className="ml-auto p-0 h-auto text-xs text-text-secondary" type="button" onClick={() => alert("Password reset not implemented yet.")}>
-                                            Forgot your password?
-                                        </Button>
-                                    )}
-                                </div>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    required
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                />
-                            </div>
-                            <Button type="submit" className="w-full" disabled={loading}>
-                                {loading ? (
-                                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-                                ) : (
-                                    isLogin ? 'Login' : 'Sign Up'
+                <CardContent className="space-y-4">
+                    {error && (
+                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-sm" role="alert">
+                            <span className="block sm:inline">{error}</span>
+                        </div>
+                    )}
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                placeholder="m@example.com"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="password">Password</Label>
+                                {isLogin && (
+                                    <button type="button" className="text-sm hover:underline text-text-secondary" onClick={() => alert("Password reset not implemented yet.")}>
+                                        Forgot your password?
+                                    </button>
                                 )}
-                            </Button>
+                            </div>
+                            <Input
+                                id="password"
+                                type="password"
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
                         </div>
+                        <Button type="submit" className="w-full" disabled={loading}>
+                            {loading ? (
+                                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                            ) : (
+                                isLogin ? 'Login' : 'Sign Up'
+                            )}
+                        </Button>
                     </form>
-                </CardContent>
-                <CardFooter className="flex flex-col gap-2">
-                    <div className="relative w-full mb-2">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-border-color" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-bg-card px-2 text-text-secondary">Or continue with</span>
-                        </div>
-                    </div>
                     <Button variant="outline" className="w-full" onClick={handleGoogleLogin} type="button">
                         Login with Google
                     </Button>
+                </CardContent>
+                <CardFooter className="flex justify-center">
+                    <p className="text-muted-foreground text-sm text-text-secondary">
+                        {isLogin ? "Don't have an account? " : "Already have an account? "}
+                        <button
+                            className="underline text-accent-primary font-bold"
+                            onClick={() => setIsLogin(!isLogin)}
+                        >
+                            {isLogin ? 'Sign up' : 'Login'}
+                        </button>
+                    </p>
                 </CardFooter>
             </Card>
         </div>
