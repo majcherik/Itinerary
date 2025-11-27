@@ -314,10 +314,10 @@ const TripDetails = () => {
     const dateString = trip ? `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}, ${endDate.getFullYear()}` : '';
 
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
             {/* Header Section with Small Image on Left */}
             <div className="flex items-center gap-4">
-                <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0">
+                <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
                     <img src={trip.hero_image || trip.image} alt={trip.title} className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1">
