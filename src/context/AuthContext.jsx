@@ -42,10 +42,17 @@ export const AuthProvider = ({ children }) => {
         return await supabase.auth.signOut();
     };
 
+    const signInWithGoogle = async () => {
+        return await supabase.auth.signInWithOAuth({
+            provider: 'google',
+        });
+    };
+
     const value = {
         signUp,
         signIn,
         signOut,
+        signInWithGoogle,
         user,
         session,
         loading
