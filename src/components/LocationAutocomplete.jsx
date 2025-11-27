@@ -36,7 +36,7 @@ const LocationAutocomplete = ({ value, onChange, placeholder = "Where to?" }) =>
     useEffect(() => {
         if (value.length > 1 && showSuggestions && countries.length > 0) {
             const filtered = countries.filter(country =>
-                country.name.toLowerCase().includes(value.toLowerCase())
+                country.name.common.toLowerCase().includes(value.toLowerCase())
             ).slice(0, 5);
             setSuggestions(filtered);
         } else {
@@ -76,12 +76,12 @@ const LocationAutocomplete = ({ value, onChange, placeholder = "Where to?" }) =>
                 <ul className="absolute z-50 w-full mt-1 bg-bg-card border border-border-color rounded-md shadow-lg max-h-60 overflow-auto">
                     {suggestions.map((country) => (
                         <li
-                            key={country.cca2 || country.name}
+                            key={country.cca2 || country.name.common}
                             className="px-4 py-2 hover:bg-bg-secondary cursor-pointer flex items-center gap-2 text-sm"
-                            onClick={() => handleSelect(country.name)}
+                            onClick={() => handleSelect(country.name.common)}
                         >
-                            <span className="text-lg">{country.flag}</span>
-                            <span className="text-text-primary">{country.name}</span>
+                            <span className="text-lg">{country.flags && country.flags.svg ? <img src={country.flags.svg} alt={country.name.common} className="w-6 h-4 object-cover rounded-sm" /> : null}</span>
+                            <span className="text-text-primary">{country.name.common}</span>
                         </li>
                     ))}
                 </ul>
