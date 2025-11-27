@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useTrip } from '../context/TripContext';
 import { useDocumentTitle } from '../hooks/use-document-title';
 import { useCountdown } from '../hooks/use-countdown';
+import LocationAutocomplete from '../components/LocationAutocomplete';
 
 const Dashboard = () => {
     useDocumentTitle('My Trips | TripPlanner');
@@ -179,9 +180,7 @@ const Dashboard = () => {
 
                         <h3 className="text-xl font-bold">{editingTrip ? 'Edit Trip' : 'Plan New Trip'}</h3>
 
-                        import LocationAutocomplete from '../components/LocationAutocomplete';
 
-                        // ... (inside component)
 
                         <div className="flex flex-col gap-2">
                             <label className="text-sm font-medium">Destination</label>
