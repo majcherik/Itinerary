@@ -14,12 +14,21 @@ const Dashboard = () => {
     // Find next upcoming trip
     const upcomingTrip = React.useMemo(() => {
         const now = new Date();
-        return trips
-            .filter(t => new Date(t.start_date) > now)
-            .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))[0];
+
+        const futureTrips = trips
+            .filter(t => {
+                // Parse as local time by appending time component
+                const tripDate = new Date(`${t.start_date}T00:00:00`);
+                return tripDate >= now;
+            })
+            .sort((a, b) => new Date(`${a.start_date}T00:00:00`) - new Date(`${b.start_date}T00:00:00`));
+
+        return futureTrips[0];
     }, [trips]);
 
-    const [days, hours, minutes, seconds] = useCountdown(upcomingTrip?.start_date || new Date());
+    // Pass the correctly formatted date string to useCountdown
+    const targetDate = upcomingTrip ? `${upcomingTrip.start_date}T00:00:00` : new Date();
+    const [days, hours, minutes, seconds] = useCountdown(targetDate);
 
     // Form state
     const [destination, setDestination] = React.useState('');
@@ -90,7 +99,7 @@ const Dashboard = () => {
                     <p className="text-text-secondary">Manage your upcoming adventures</p>
                 </div>
                 {upcomingTrip && days >= 0 && (
-                    <div className="hidden md:flex items-center gap-4 bg-bg-secondary px-4 py-2 rounded-xl border border-border-color">
+                    <div className="flex items-center gap-4 bg-bg-secondary px-4 py-2 rounded-xl border border-border-color">
                         <div className="flex items-center gap-2 text-accent-primary font-bold">
                             <Clock size={20} />
                             <span>Next Trip: {upcomingTrip.title}</span>
