@@ -8,7 +8,6 @@ import { MapPin, Calendar, Home, Train, Plus, Trash2, Clock, Copy, Check } from 
 import { useTrip } from '../context/TripContext';
 import { useCopyToClipboard } from '../hooks/use-copy-to-clipboard';
 import { useDocumentTitle } from '../hooks/use-document-title';
-import { useDocumentTitle } from '../hooks/use-document-title';
 import { useLocalStorage } from '../hooks/use-local-storage';
 import FadeIn from '../components/FadeIn';
 
