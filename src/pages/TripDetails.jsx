@@ -315,11 +315,8 @@ const TripDetails = () => {
 
     return (
         <div className="flex flex-col gap-4">
-            {/* Header Section with Small Image on Left */}
+            {/* Header Section without Image */}
             <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                    <img src={trip.hero_image || trip.image} alt={trip.title} className="w-full h-full object-cover" />
-                </div>
                 <div className="flex-1">
                     <h1 className="text-3xl font-bold mb-1">{trip.title}</h1>
                     <p className="text-text-secondary text-sm mb-2">{dateString}</p>
