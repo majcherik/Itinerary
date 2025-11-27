@@ -1,7 +1,10 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { useScrollLock } from '../hooks/use-scroll-lock';
 
 const Modal = ({ isOpen, onClose, title, children, footer }) => {
+    useScrollLock(isOpen);
+
     if (!isOpen) return null;
 
     return (

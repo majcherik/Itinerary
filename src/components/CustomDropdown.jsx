@@ -1,23 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
+import { useOnClickOutside } from '../hooks/use-on-click-outside';
 
 const CustomDropdown = ({ options, value, onChange, placeholder = "Select...", className = "", buttonClassName }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
     // Close on click outside
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsOpen(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
+    useOnClickOutside(dropdownRef, () => setIsOpen(false));
 
     const handleSelect = (optionValue) => {
         onChange(optionValue);

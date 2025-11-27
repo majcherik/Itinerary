@@ -1,12 +1,25 @@
 import React from 'react';
-import { Calendar, Plus, Trash2, Edit2, X } from 'lucide-react';
+import { Calendar, Plus, Trash2, Edit2, X, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTrip } from '../context/TripContext';
+import { useDocumentTitle } from '../hooks/use-document-title';
+import { useCountdown } from '../hooks/use-countdown';
 
 const Dashboard = () => {
+    useDocumentTitle('My Trips | TripPlanner');
     const { trips, addTrip, deleteTrip, updateTrip } = useTrip();
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [editingTrip, setEditingTrip] = React.useState(null);
+
+    // Find next upcoming trip
+    const upcomingTrip = React.useMemo(() => {
+        const now = new Date();
+        return trips
+            .filter(t => new Date(t.start_date) > now)
+            .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))[0];
+    }, [trips]);
+
+    const [days, hours, minutes, seconds] = useCountdown(upcomingTrip?.start_date || new Date());
 
     // Form state
     const [destination, setDestination] = React.useState('');
@@ -71,11 +84,35 @@ const Dashboard = () => {
 
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-end">
                 <div>
                     <h2 className="text-2xl font-bold">My Trips</h2>
                     <p className="text-text-secondary">Manage your upcoming adventures</p>
                 </div>
+                {upcomingTrip && days >= 0 && (
+                    <div className="hidden md:flex items-center gap-4 bg-bg-secondary px-4 py-2 rounded-xl border border-border-color">
+                        <div className="flex items-center gap-2 text-accent-primary font-bold">
+                            <Clock size={20} />
+                            <span>Next Trip: {upcomingTrip.title}</span>
+                        </div>
+                        <div className="flex gap-2 text-sm font-mono">
+                            <div className="flex flex-col items-center">
+                                <span className="font-bold text-lg leading-none">{days}</span>
+                                <span className="text-[10px] text-text-secondary uppercase">Days</span>
+                            </div>
+                            <span className="font-bold text-lg leading-none">:</span>
+                            <div className="flex flex-col items-center">
+                                <span className="font-bold text-lg leading-none">{hours}</span>
+                                <span className="text-[10px] text-text-secondary uppercase">Hrs</span>
+                            </div>
+                            <span className="font-bold text-lg leading-none">:</span>
+                            <div className="flex flex-col items-center">
+                                <span className="font-bold text-lg leading-none">{minutes}</span>
+                                <span className="text-[10px] text-text-secondary uppercase">Mins</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 <button onClick={openAddModal} className="btn btn-primary flex items-center gap-2">
                     <Plus size={20} /> New Trip
                 </button>

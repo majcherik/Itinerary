@@ -4,11 +4,14 @@ import Tabs from '../components/Tabs';
 import CurrencyConverter from '../components/CurrencyConverter';
 import CurrencyCalculator from '../components/CurrencyCalculator';
 import Modal from '../components/Modal';
-import { MapPin, Calendar, Home, Train, Plus, Trash2, Clock } from 'lucide-react';
+import { MapPin, Calendar, Home, Train, Plus, Trash2, Clock, Copy, Check } from 'lucide-react';
 import { useTrip } from '../context/TripContext';
+import { useCopyToClipboard } from '../hooks/use-copy-to-clipboard';
+import { useDocumentTitle } from '../hooks/use-document-title';
 
 const TripDetails = () => {
     const { id } = useParams();
+    const [copiedText, copy] = useCopyToClipboard();
     const {
         getTrip,
         addItineraryItem,
@@ -20,6 +23,7 @@ const TripDetails = () => {
     } = useTrip();
 
     const trip = getTrip(id);
+    useDocumentTitle(trip ? `${trip.title} | TripPlanner` : 'Trip Details | TripPlanner');
 
     // Modal State
     const [activeModal, setActiveModal] = useState(null); // 'itinerary', 'accommodation', 'transport' or null
@@ -165,6 +169,13 @@ const TripDetails = () => {
                             <div className="flex items-center gap-1 text-text-secondary text-sm mt-1">
                                 <MapPin size={14} />
                                 <span>{place.address}</span>
+                                <button
+                                    onClick={() => copy(place.address)}
+                                    className="ml-2 p-1 hover:bg-bg-secondary rounded-full text-text-secondary hover:text-accent-primary transition-colors"
+                                    title="Copy Address"
+                                >
+                                    {copiedText === place.address ? <Check size={12} /> : <Copy size={12} />}
+                                </button>
                             </div>
                             <div className="flex items-center gap-1 text-text-secondary text-sm mt-1">
                                 <Calendar size={14} />

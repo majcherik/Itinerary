@@ -1,10 +1,12 @@
 import React from 'react';
-import { Plane, Ticket, QrCode, Download, Plus } from 'lucide-react';
+import { Plane, Ticket, QrCode, Download, Plus, Copy, Check } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useTrip } from '../context/TripContext';
+import { useCopyToClipboard } from '../hooks/use-copy-to-clipboard';
 
 const Wallet = () => {
     const { id } = useParams();
+    const [copiedText, copy] = useCopyToClipboard();
     const { getTrip, addTicket } = useTrip();
     const trip = getTrip(id);
     const tickets = trip?.wallet || [];
@@ -43,8 +45,26 @@ const Wallet = () => {
                                     {ticket.type === 'Flight' ? <Plane size={24} className="text-accent-primary" /> : <Ticket size={24} className="text-accent-secondary" />}
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-lg">{ticket.provider}</h3>
-                                    <p className="text-text-secondary text-sm">{ticket.type === 'Flight' ? ticket.number : ticket.name}</p>
+                                    <h3 className="font-bold text-lg flex items-center gap-2">
+                                        {ticket.provider}
+                                        <button
+                                            onClick={() => copy(ticket.provider)}
+                                            className="text-text-secondary hover:text-accent-primary transition-colors"
+                                            title="Copy Provider"
+                                        >
+                                            {copiedText === ticket.provider ? <Check size={14} /> : <Copy size={14} />}
+                                        </button>
+                                    </h3>
+                                    <p className="text-text-secondary text-sm flex items-center gap-2">
+                                        {ticket.type === 'Flight' ? ticket.number : ticket.name}
+                                        <button
+                                            onClick={() => copy(ticket.type === 'Flight' ? ticket.number : ticket.name)}
+                                            className="text-text-secondary hover:text-accent-primary transition-colors"
+                                            title="Copy Details"
+                                        >
+                                            {copiedText === (ticket.type === 'Flight' ? ticket.number : ticket.name) ? <Check size={12} /> : <Copy size={12} />}
+                                        </button>
+                                    </p>
                                 </div>
                             </div>
                             <span className="px-3 py-1 bg-bg-primary rounded-full text-xs font-medium border border-border-color">
