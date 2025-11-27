@@ -18,10 +18,12 @@ const LocationAutocomplete = ({ value, onChange, placeholder = "Where to?" }) =>
             setIsLoading(true);
             try {
                 const data = await getCountries({
-                    fields: ['name', 'flags', 'cca2']
+                    fields: ['name', 'population', 'cca2']
                 });
                 if (data) {
-                    setCountries(data);
+                    // Sort by population (descending) to show biggest/most common first
+                    const sortedData = data.sort((a, b) => b.population - a.population);
+                    setCountries(sortedData);
                 }
             } catch (error) {
                 console.error("Failed to fetch countries:", error);
@@ -80,7 +82,6 @@ const LocationAutocomplete = ({ value, onChange, placeholder = "Where to?" }) =>
                             className="px-4 py-2 hover:bg-bg-secondary cursor-pointer flex items-center gap-2 text-sm"
                             onClick={() => handleSelect(country.name.common)}
                         >
-                            <span className="text-lg">{country.flags && country.flags.svg ? <img src={country.flags.svg} alt={country.name.common} className="w-6 h-4 object-cover rounded-sm" /> : null}</span>
                             <span className="text-text-primary">{country.name.common}</span>
                         </li>
                     ))}
