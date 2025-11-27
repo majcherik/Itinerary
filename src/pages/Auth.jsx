@@ -58,23 +58,23 @@ const Auth = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-bg-primary p-4">
-            <Card className="w-full max-w-sm">
+            <Card className="w-full max-w-sm mx-auto">
                 <CardHeader>
                     <div className="flex justify-between items-start">
-                        <div>
+                        <div className="grid gap-1">
                             <CardTitle className="text-2xl">{isLogin ? 'Login' : 'Sign Up'}</CardTitle>
                             <CardDescription>
                                 {isLogin ? 'Enter your email below to login to your account' : 'Enter your details below to create an account'}
                             </CardDescription>
                         </div>
-                        <Button variant="link" onClick={() => setIsLogin(!isLogin)} className="px-0 text-accent-primary">
+                        <Button variant="link" onClick={() => setIsLogin(!isLogin)} className="px-0 text-accent-primary font-bold">
                             {isLogin ? 'Sign Up' : 'Login'}
                         </Button>
                     </div>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit}>
-                        <div className="flex flex-col gap-6">
+                        <div className="grid gap-4">
                             {error && (
                                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-sm" role="alert">
                                     <span className="block sm:inline">{error}</span>
@@ -108,17 +108,17 @@ const Auth = () => {
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
                             </div>
+                            <Button type="submit" className="w-full" disabled={loading}>
+                                {loading ? (
+                                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                                ) : (
+                                    isLogin ? 'Login' : 'Sign Up'
+                                )}
+                            </Button>
                         </div>
-                        <Button type="submit" className="w-full mt-6" disabled={loading}>
-                            {loading ? (
-                                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-                            ) : (
-                                isLogin ? 'Login' : 'Sign Up'
-                            )}
-                        </Button>
                     </form>
                 </CardContent>
-                <CardFooter className="flex-col gap-2">
+                <CardFooter className="flex flex-col gap-2">
                     <div className="relative w-full mb-2">
                         <div className="absolute inset-0 flex items-center">
                             <span className="w-full border-t border-border-color" />
