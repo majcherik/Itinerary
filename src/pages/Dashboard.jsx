@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useTrip } from '../context/TripContext';
 import { useDocumentTitle } from '../hooks/use-document-title';
 import { useCountdown } from '../hooks/use-countdown';
-import LocationAutocomplete from '../components/LocationAutocomplete';
+
 
 const Dashboard = () => {
     useDocumentTitle('My Trips | TripPlanner');
@@ -184,10 +184,12 @@ const Dashboard = () => {
 
                         <div className="flex flex-col gap-2">
                             <label className="text-sm font-medium">Destination</label>
-                            <LocationAutocomplete
-                                value={destination}
-                                onChange={setDestination}
+                            <input
+                                type="text"
+                                className="input"
                                 placeholder="Where to?"
+                                value={destination}
+                                onChange={(e) => setDestination(e.target.value)}
                             />
                         </div>
 
