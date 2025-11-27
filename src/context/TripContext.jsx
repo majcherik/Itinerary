@@ -440,25 +440,54 @@ export const TripProvider = ({ children }) => {
         }
     };
 
+    const resetPackingList = async (tripId) => {
+        try {
+            // Optimistic update
+            setTrips(prevTrips => prevTrips.map(trip => {
+                if (trip.id === tripId) {
+                    return {
+                        ...trip,
+                        packingList: trip.packingList.map(item => ({ ...item, is_packed: false }))
+                    };
+                }
+                return trip;
+            }));
+
+            const { error } = await supabase
+                .from('packing_items')
+                .update({ is_packed: false })
+                .eq('trip_id', tripId);
+
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error resetting packing list:', error);
+            // Revert on error would go here
+        }
+    };
+
     return (
         <TripContext.Provider value={{
             trips,
             loading,
             addTrip,
-            deleteTrip,
             updateTrip,
+            deleteTrip,
             getTrip,
-            addTicket,
-            addPackingItem,
-            updatePackingItem,
-            deletePackingItem,
-            addNote,
             addItineraryItem,
             deleteItineraryItem,
             addAccommodation,
             deleteAccommodation,
             addTransport,
-            deleteTransport
+            deleteTransport,
+            addTicket,
+            deleteTicket,
+            addPackingItem,
+            updatePackingItem,
+            deletePackingItem,
+            resetPackingList,
+            addNote,
+            deleteNote,
+            refreshTrips: fetchTrips
         }}>
             {children}
         </TripContext.Provider>

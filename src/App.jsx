@@ -12,6 +12,10 @@ import Auth from './pages/Auth';
 import ProtectedRoute from './components/ProtectedRoute';
 import MenuDockResponsive from './components/MenuDockResponsive';
 
+import Footer from './components/Footer';
+import GDPR from './pages/GDPR';
+import TermsOfService from './pages/TermsOfService';
+
 function App() {
   return (
     <AuthProvider>
@@ -30,7 +34,10 @@ function App() {
                       <Route path="/trip/:id/wallet" element={<Wallet />} />
                       <Route path="/trip/:id/packing" element={<PackingList />} />
                       <Route path="/trip/:id/docs" element={<Documents />} />
+                      <Route path="/gdpr" element={<GDPR />} />
+                      <Route path="/terms" element={<TermsOfService />} />
                     </Routes>
+                    <Footer />
                   </Layout>
                   <MenuDockResponsive />
                 </ProtectedRoute>

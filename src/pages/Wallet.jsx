@@ -3,6 +3,8 @@ import { Plane, Ticket, QrCode, Download, Plus, Copy, Check } from 'lucide-react
 import { useParams } from 'react-router-dom';
 import { useTrip } from '../context/TripContext';
 import { useCopyToClipboard } from '../hooks/use-copy-to-clipboard';
+import QRCode from 'react-qr-code';
+import Modal from '../components/Modal';
 
 const Wallet = () => {
     const { id } = useParams();
@@ -13,6 +15,9 @@ const Wallet = () => {
 
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [newTicket, setNewTicket] = React.useState({ type: 'Flight', provider: '', number: '', date: '', time: '' });
+
+    const [qrModalOpen, setQrModalOpen] = React.useState(false);
+    const [selectedTicketForQr, setSelectedTicketForQr] = React.useState(null);
 
     const handleAddTicket = () => {
         if (!newTicket.provider || !newTicket.date) return;
@@ -111,11 +116,48 @@ const Wallet = () => {
                                 <Download size={16} />
                                 <span className="text-sm font-medium">Download PDF</span>
                             </div>
-                            <QrCode size={48} className="bg-white p-1 rounded" color="black" />
+                            <button
+                                onClick={() => {
+                                    setSelectedTicketForQr(ticket);
+                                    setQrModalOpen(true);
+                                }}
+                                className="bg-white p-1 rounded hover:opacity-80 transition-opacity"
+                            >
+                                <QrCode size={48} color="black" />
+                            </button>
                         </div>
                     </div>
                 ))}
             </div>
+
+            <Modal
+                isOpen={qrModalOpen}
+                onClose={() => setQrModalOpen(false)}
+                title="Ticket QR Code"
+                footer={
+                    <button onClick={() => setQrModalOpen(false)} className="btn btn-primary w-full">Close</button>
+                }
+            >
+                {selectedTicketForQr && (
+                    <div className="flex flex-col items-center gap-4 py-4">
+                        <div className="bg-white p-4 rounded-lg shadow-sm">
+                            <QRCode
+                                value={`TICKET:${selectedTicketForQr.id}:${selectedTicketForQr.provider}`}
+                                size={200}
+                            />
+                        </div>
+                        <div className="text-center">
+                            <h3 className="font-bold text-lg">{selectedTicketForQr.provider}</h3>
+                            <p className="text-text-secondary text-sm">
+                                {selectedTicketForQr.type === 'Flight' ? selectedTicketForQr.number : selectedTicketForQr.name}
+                            </p>
+                            <p className="text-xs text-text-secondary mt-2 font-mono">
+                                ID: {selectedTicketForQr.id}
+                            </p>
+                        </div>
+                    </div>
+                )}
+            </Modal>
 
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
