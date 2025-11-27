@@ -17,7 +17,9 @@ const LocationAutocomplete = ({ value, onChange, placeholder = "Where to?" }) =>
         const fetchCountriesData = async () => {
             setIsLoading(true);
             try {
-                const data = await getCountries({});
+                const data = await getCountries({
+                    fields: ['name', 'flags', 'cca2']
+                });
                 if (data) {
                     setCountries(data);
                 }
