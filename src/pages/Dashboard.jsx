@@ -27,7 +27,7 @@ const Dashboard = () => {
     }, [trips]);
 
     // Pass the correctly formatted date string to useCountdown
-    const targetDate = upcomingTrip ? `${upcomingTrip.start_date}T00:00:00` : new Date();
+    const targetDate = upcomingTrip ? `${upcomingTrip.start_date}T00:00:00` : null;
     const [days, hours, minutes, seconds] = useCountdown(targetDate);
 
     // Form state
