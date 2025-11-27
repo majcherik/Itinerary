@@ -17,7 +17,7 @@ const PackingList = () => {
     const toggleItem = (itemId) => {
         const item = items.find(i => i.id === itemId);
         if (item) {
-            updatePackingItem(id, itemId, { checked: !item.checked });
+            updatePackingItem(id, itemId, { is_packed: !item.is_packed });
         }
     };
 
@@ -27,7 +27,12 @@ const PackingList = () => {
 
     const handleAddItem = () => {
         if (!newItem.name) return;
-        addPackingItem(id, { text: newItem.name, category: newItem.category, id: Date.now(), checked: false });
+        // TripContext expects 'text' for the item name in addPackingItem (mapped to 'item' in DB)
+        // Wait, I changed TripContext to use 'item' in local state, but addPackingItem still takes 'item' object.
+        // Let's check TripContext addPackingItem again. It takes `item` object and uses `item.text` for `item` column.
+        // I should probably update TripContext to take `item.item` or just map it here.
+        // Let's keep sending `text` as `newItem.name` to match TripContext's expectation: `item: item.text`.
+        addPackingItem(id, { text: newItem.name, category: newItem.category, checked: false });
         setNewItem({ name: '', category: 'Misc' });
         setIsModalOpen(false);
     };
@@ -36,13 +41,19 @@ const PackingList = () => {
 
     // Calculate progress
     const totalItems = items.length;
-    const packedItems = items.filter(i => i.checked).length;
+    const packedItems = items.filter(i => i.is_packed).length;
     const progress = totalItems === 0 ? 0 : Math.round((packedItems / totalItems) * 100);
 
     if (!trip) return <div>Trip not found</div>;
 
     return (
         <div className="flex flex-col gap-6">
+            <style>{`
+                /* Hide default datalist arrow in Chrome/Edge */
+                input::-webkit-calendar-picker-indicator {
+                    display: none !important;
+                }
+            `}</style>
             <div className="flex justify-between items-end">
                 <div>
                     <h2 className="text-2xl font-bold">Packing List</h2>
@@ -71,11 +82,11 @@ const PackingList = () => {
                                 {categoryItems.map(item => (
                                     <div key={item.id} className="card flex items-center justify-between p-3">
                                         <div className="flex items-center gap-3 cursor-pointer" onClick={() => toggleItem(item.id)}>
-                                            {item.checked ?
+                                            {item.is_packed ?
                                                 <CheckCircle className="text-success" size={20} /> :
                                                 <Circle className="text-text-secondary" size={20} />
                                             }
-                                            <span className={item.checked ? 'line-through text-text-secondary' : ''}>{item.text || item.name}</span>
+                                            <span className={item.is_packed ? 'line-through text-text-secondary' : ''}>{item.item || item.text || item.name}</span>
                                         </div>
                                         <button onClick={() => deleteItem(item.id)} className="text-text-secondary hover:text-danger">
                                             <Trash2 size={18} />

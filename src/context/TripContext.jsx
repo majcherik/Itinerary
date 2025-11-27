@@ -354,9 +354,9 @@ export const TripProvider = ({ children }) => {
 
             const newItem = {
                 id: data.id,
-                text: data.item,
+                item: data.item,
                 category: data.category,
-                checked: data.is_packed
+                is_packed: data.is_packed
             };
 
             setTrips(prev => prev.map(t => t.id === Number(tripId) ? {
@@ -371,7 +371,7 @@ export const TripProvider = ({ children }) => {
     const updatePackingItem = async (tripId, itemId, updates) => {
         try {
             const dbUpdates = {};
-            if (updates.checked !== undefined) dbUpdates.is_packed = updates.checked;
+            if (updates.is_packed !== undefined) dbUpdates.is_packed = updates.is_packed;
             // Add other fields if editable
 
             const { data, error } = await supabase
@@ -385,7 +385,7 @@ export const TripProvider = ({ children }) => {
 
             setTrips(prev => prev.map(t => t.id === Number(tripId) ? {
                 ...t,
-                packingList: t.packingList.map(item => item.id === itemId ? { ...item, checked: data.is_packed } : item)
+                packingList: t.packingList.map(item => item.id === itemId ? { ...item, is_packed: data.is_packed } : item)
             } : t));
         } catch (error) {
             console.error('Error updating packing item:', error);
