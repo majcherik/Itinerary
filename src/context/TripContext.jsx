@@ -337,6 +337,24 @@ export const TripProvider = ({ children }) => {
         }
     };
 
+    const deleteTicket = async (tripId, ticketId) => {
+        try {
+            setTrips(prev => prev.map(t => t.id === Number(tripId) ? {
+                ...t,
+                wallet: (t.wallet || []).filter(item => item.id !== ticketId)
+            } : t));
+
+            const { error } = await supabase
+                .from('tickets')
+                .delete()
+                .eq('id', ticketId);
+
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error deleting ticket:', error);
+        }
+    };
+
     const addPackingItem = async (tripId, item) => {
         try {
             const { data, error } = await supabase
