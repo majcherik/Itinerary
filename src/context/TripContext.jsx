@@ -458,6 +458,23 @@ export const TripProvider = ({ children }) => {
         }
     };
 
+    const deleteNote = async (tripId, noteId) => {
+        try {
+            const { error } = await supabase
+                .from('documents')
+                .delete()
+                .eq('id', noteId);
+
+            if (error) throw error;
+            setTrips(prev => prev.map(t => t.id === Number(tripId) ? {
+                ...t,
+                documents: t.documents.filter(n => n.id !== noteId)
+            } : t));
+        } catch (error) {
+            console.error('Error deleting note:', error);
+        }
+    };
+
     const resetPackingList = async (tripId) => {
         try {
             // Optimistic update
