@@ -8,7 +8,9 @@ import { MapPin, Calendar, Home, Train, Plus, Trash2, Clock, Copy, Check } from 
 import { useTrip } from '../context/TripContext';
 import { useCopyToClipboard } from '../hooks/use-copy-to-clipboard';
 import { useDocumentTitle } from '../hooks/use-document-title';
+import { useDocumentTitle } from '../hooks/use-document-title';
 import { useLocalStorage } from '../hooks/use-local-storage';
+import FadeIn from '../components/FadeIn';
 
 const TripDetails = () => {
     const { id } = useParams();
@@ -113,27 +115,29 @@ const TripDetails = () => {
                 </button>
             </div>
             <div className="relative border-l-2 border-border-color ml-3 pl-6 space-y-8">
-                {(trip.itinerary || []).sort((a, b) => a.day - b.day).map((item) => (
-                    <div key={item.id || item.day} className="relative">
-                        <div className="absolute -left-[2.4rem] bg-accent-primary text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-sm z-10">
-                            {item.day}
-                        </div>
-                        <div className="card group relative pr-10">
-                            <button
-                                onClick={() => deleteItineraryItem(id, item.id)}
-                                className="absolute top-3 right-3 p-1.5 rounded-full bg-bg-primary text-text-secondary hover:text-danger hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
-                                title="Delete item"
-                            >
-                                <Trash2 size={14} />
-                            </button>
-                            <span className="text-xs font-bold text-accent-primary uppercase tracking-wider">{item.date}</span>
-                            <div className="flex justify-between items-start">
-                                <h4 className="font-bold text-lg mt-1">{item.title}</h4>
-                                {item.cost && <span className="text-sm font-semibold text-text-primary bg-bg-secondary px-2 py-1 rounded">${item.cost}</span>}
+                {(trip.itinerary || []).sort((a, b) => a.day - b.day).map((item, index) => (
+                    <FadeIn key={item.id || item.day} delay={index * 100}>
+                        <div className="relative">
+                            <div className="absolute -left-[2.4rem] bg-accent-primary text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-sm z-10">
+                                {item.day}
                             </div>
-                            <p className="text-text-secondary text-sm mt-2">{item.description}</p>
+                            <div className="card group relative pr-10">
+                                <button
+                                    onClick={() => deleteItineraryItem(id, item.id)}
+                                    className="absolute top-3 right-3 p-1.5 rounded-full bg-bg-primary text-text-secondary hover:text-danger hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
+                                    title="Delete item"
+                                >
+                                    <Trash2 size={14} />
+                                </button>
+                                <span className="text-xs font-bold text-accent-primary uppercase tracking-wider">{item.date}</span>
+                                <div className="flex justify-between items-start">
+                                    <h4 className="font-bold text-lg mt-1">{item.title}</h4>
+                                    {item.cost && <span className="text-sm font-semibold text-text-primary bg-bg-secondary px-2 py-1 rounded">${item.cost}</span>}
+                                </div>
+                                <p className="text-text-secondary text-sm mt-2">{item.description}</p>
+                            </div>
                         </div>
-                    </div>
+                    </FadeIn>
                 ))}
                 {(trip.itinerary || []).length === 0 && <p className="text-text-secondary italic">No itinerary items yet.</p>}
             </div>
@@ -149,41 +153,43 @@ const TripDetails = () => {
                 </button>
             </div>
             <div className="grid gap-4">
-                {(trip.accommodation || []).map((place) => (
-                    <div key={place.id || place.name} className="card flex gap-4 group relative pr-10">
-                        <button
-                            onClick={() => deleteAccommodation(id, place.id)}
-                            className="absolute top-3 right-3 p-1.5 rounded-full bg-bg-primary text-text-secondary hover:text-danger hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
-                            title="Delete stay"
-                        >
-                            <Trash2 size={14} />
-                        </button>
-                        <div className="p-3 bg-bg-primary rounded-lg h-fit">
-                            <Home size={24} className="text-accent-secondary" />
+                {(trip.accommodation || []).map((place, index) => (
+                    <FadeIn key={place.id || place.name} delay={index * 100}>
+                        <div className="card flex gap-4 group relative pr-10">
+                            <button
+                                onClick={() => deleteAccommodation(id, place.id)}
+                                className="absolute top-3 right-3 p-1.5 rounded-full bg-bg-primary text-text-secondary hover:text-danger hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
+                                title="Delete stay"
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                            <div className="p-3 bg-bg-primary rounded-lg h-fit">
+                                <Home size={24} className="text-accent-secondary" />
+                            </div>
+                            <div>
+                                <span className="text-xs font-bold text-accent-secondary uppercase tracking-wider">{place.type}</span>
+                                <div className="flex justify-between items-start">
+                                    <h4 className="font-bold text-lg">{place.name}</h4>
+                                    {place.cost && <span className="text-sm font-semibold text-text-primary bg-bg-secondary px-2 py-1 rounded">${place.cost}</span>}
+                                </div>
+                                <div className="flex items-center gap-1 text-text-secondary text-sm mt-1">
+                                    <MapPin size={14} />
+                                    <span>{place.address}</span>
+                                    <button
+                                        onClick={() => copy(place.address)}
+                                        className="ml-2 p-1 hover:bg-bg-secondary rounded-full text-text-secondary hover:text-accent-primary transition-colors"
+                                        title="Copy Address"
+                                    >
+                                        {copiedText === place.address ? <Check size={12} /> : <Copy size={12} />}
+                                    </button>
+                                </div>
+                                <div className="flex items-center gap-1 text-text-secondary text-sm mt-1">
+                                    <Calendar size={14} />
+                                    <span>{place.checkIn} - {place.checkOut}</span>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <span className="text-xs font-bold text-accent-secondary uppercase tracking-wider">{place.type}</span>
-                            <div className="flex justify-between items-start">
-                                <h4 className="font-bold text-lg">{place.name}</h4>
-                                {place.cost && <span className="text-sm font-semibold text-text-primary bg-bg-secondary px-2 py-1 rounded">${place.cost}</span>}
-                            </div>
-                            <div className="flex items-center gap-1 text-text-secondary text-sm mt-1">
-                                <MapPin size={14} />
-                                <span>{place.address}</span>
-                                <button
-                                    onClick={() => copy(place.address)}
-                                    className="ml-2 p-1 hover:bg-bg-secondary rounded-full text-text-secondary hover:text-accent-primary transition-colors"
-                                    title="Copy Address"
-                                >
-                                    {copiedText === place.address ? <Check size={12} /> : <Copy size={12} />}
-                                </button>
-                            </div>
-                            <div className="flex items-center gap-1 text-text-secondary text-sm mt-1">
-                                <Calendar size={14} />
-                                <span>{place.checkIn} - {place.checkOut}</span>
-                            </div>
-                        </div>
-                    </div>
+                    </FadeIn>
                 ))}
                 {(trip.accommodation || []).length === 0 && <p className="text-text-secondary italic">No accommodation added yet.</p>}
             </div>
@@ -199,40 +205,42 @@ const TripDetails = () => {
                 </button>
             </div>
             <div className="grid gap-4">
-                {(trip.transport || []).map((ride) => (
-                    <div key={ride.id || ride.number} className="card group relative pr-10">
-                        <button
-                            onClick={() => deleteTransport(id, ride.id)}
-                            className="absolute top-3 right-3 p-1.5 rounded-full bg-bg-primary text-text-secondary hover:text-danger hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
-                            title="Delete transport"
-                        >
-                            <Trash2 size={14} />
-                        </button>
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-bg-primary rounded-lg">
-                                    <Train size={24} className="text-accent-primary" />
+                {(trip.transport || []).map((ride, index) => (
+                    <FadeIn key={ride.id || ride.number} delay={index * 100}>
+                        <div className="card group relative pr-10">
+                            <button
+                                onClick={() => deleteTransport(id, ride.id)}
+                                className="absolute top-3 right-3 p-1.5 rounded-full bg-bg-primary text-text-secondary hover:text-danger hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
+                                title="Delete transport"
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-bg-primary rounded-lg">
+                                        <Train size={24} className="text-accent-primary" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold">{ride.type} {ride.number}</h4>
+                                        <p className="text-text-secondary text-xs">{ride.from} → {ride.to}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h4 className="font-bold">{ride.type} {ride.number}</h4>
-                                    <p className="text-text-secondary text-xs">{ride.from} → {ride.to}</p>
-                                </div>
+                                {ride.cost && <span className="text-sm font-semibold text-text-primary bg-bg-secondary px-2 py-1 rounded">${ride.cost}</span>}
                             </div>
-                            {ride.cost && <span className="text-sm font-semibold text-text-primary bg-bg-secondary px-2 py-1 rounded">${ride.cost}</span>}
-                        </div>
 
-                        <div className="flex justify-between items-center text-sm">
-                            <div>
-                                <span className="text-text-secondary text-xs block">Depart</span>
-                                <span className="font-semibold">{ride.depart}</span>
-                            </div>
-                            <div className="h-px bg-border-color flex-1 mx-4"></div>
-                            <div className="text-right">
-                                <span className="text-text-secondary text-xs block">Arrive</span>
-                                <span className="font-semibold">{ride.arrive}</span>
+                            <div className="flex justify-between items-center text-sm">
+                                <div>
+                                    <span className="text-text-secondary text-xs block">Depart</span>
+                                    <span className="font-semibold">{ride.depart}</span>
+                                </div>
+                                <div className="h-px bg-border-color flex-1 mx-4"></div>
+                                <div className="text-right">
+                                    <span className="text-text-secondary text-xs block">Arrive</span>
+                                    <span className="font-semibold">{ride.arrive}</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </FadeIn>
                 ))}
                 {(trip.transport || []).length === 0 && <p className="text-text-secondary italic">No transport added yet.</p>}
             </div>
