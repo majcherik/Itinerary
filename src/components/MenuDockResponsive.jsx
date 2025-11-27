@@ -3,6 +3,7 @@ import { MenuDock } from '@/components/ui/shadcn-io/menu-dock';
 import { LayoutDashboard, Wallet, CheckSquare, FileText, LogOut } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useMediaQuery } from '../hooks/use-media-query';
 
 export default function MenuDockResponsive() {
     const navigate = useNavigate();
@@ -49,23 +50,29 @@ export default function MenuDockResponsive() {
         return 0; // Default to Dashboard
     }, [location.pathname]);
 
+    // Check for desktop view
+    const isDesktop = useMediaQuery('(min-width: 1024px)');
+
     return (
         <div className="fixed bottom-[10px] left-1/2 -translate-x-1/2 z-[99999] flex justify-center pointer-events-none w-auto">
             <div className="bg-bg-card border border-border-color shadow-2xl rounded-xl p-1 pointer-events-auto flex">
-                <MenuDock
-                    items={menuItems}
-                    variant="compact"
-                    className="lg:hidden bg-transparent border-none shadow-none"
-                    activeIndex={activeIndex}
-                    showLabels={false}
-                />
-                <MenuDock
-                    items={menuItems}
-                    variant="default"
-                    className="hidden lg:flex bg-transparent border-none shadow-none"
-                    activeIndex={activeIndex}
-                    showLabels={true}
-                />
+                {!isDesktop ? (
+                    <MenuDock
+                        items={menuItems}
+                        variant="compact"
+                        className="bg-transparent border-none shadow-none"
+                        activeIndex={activeIndex}
+                        showLabels={false}
+                    />
+                ) : (
+                    <MenuDock
+                        items={menuItems}
+                        variant="default"
+                        className="bg-transparent border-none shadow-none"
+                        activeIndex={activeIndex}
+                        showLabels={true}
+                    />
+                )}
             </div>
         </div>
     );

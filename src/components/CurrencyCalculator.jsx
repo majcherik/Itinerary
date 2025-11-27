@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRightLeft, RefreshCw, X } from 'lucide-react';
 import CustomDropdown from './CustomDropdown';
+import { useDebounceValue } from '../hooks/use-debounce-value';
 
 const CurrencyCalculator = ({ onClose }) => {
     const [currencies, setCurrencies] = useState({});
@@ -26,12 +27,14 @@ const CurrencyCalculator = ({ onClose }) => {
         fetchCurrencies();
     }, []);
 
+    const debouncedAmount = useDebounceValue(amount, 500);
+
     useEffect(() => {
         const convert = async () => {
-            if (!amount || !fromCurrency || !toCurrency) return;
+            if (!debouncedAmount || !fromCurrency || !toCurrency) return;
             setConverting(true);
             try {
-                const res = await fetch(`https://api.frankfurter.dev/v1/latest?amount=${amount}&from=${fromCurrency}&to=${toCurrency}`);
+                const res = await fetch(`https://api.frankfurter.dev/v1/latest?amount=${debouncedAmount}&from=${fromCurrency}&to=${toCurrency}`);
                 const data = await res.json();
                 setResult(data.rates[toCurrency]);
             } catch (error) {
@@ -41,12 +44,8 @@ const CurrencyCalculator = ({ onClose }) => {
             }
         };
 
-        const timeoutId = setTimeout(() => {
-            convert();
-        }, 500); // Debounce conversion
-
-        return () => clearTimeout(timeoutId);
-    }, [amount, fromCurrency, toCurrency]);
+        convert();
+    }, [debouncedAmount, fromCurrency, toCurrency]);
 
     const handleSwap = () => {
         setFromCurrency(toCurrency);

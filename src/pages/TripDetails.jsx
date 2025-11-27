@@ -8,6 +8,7 @@ import { MapPin, Calendar, Home, Train, Plus, Trash2, Clock, Copy, Check } from 
 import { useTrip } from '../context/TripContext';
 import { useCopyToClipboard } from '../hooks/use-copy-to-clipboard';
 import { useDocumentTitle } from '../hooks/use-document-title';
+import { useLocalStorage } from '../hooks/use-local-storage';
 
 const TripDetails = () => {
     const { id } = useParams();
@@ -324,6 +325,8 @@ const TripDetails = () => {
     const options = { month: 'short', day: 'numeric' };
     const dateString = trip ? `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}, ${endDate.getFullYear()}` : '';
 
+    const [activeTab, setActiveTab] = useLocalStorage(`trip-details-tab-${id}`, 'itinerary');
+
     return (
         <div className="flex flex-col gap-4">
             {/* Header Section without Image */}
@@ -359,7 +362,11 @@ const TripDetails = () => {
             {isCalculatorOpen && <CurrencyCalculator onClose={() => setIsCalculatorOpen(false)} />}
 
 
-            <Tabs tabs={tabs} />
+            <Tabs
+                tabs={tabs}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+            />
 
             {/* Modals */}
             <Modal
