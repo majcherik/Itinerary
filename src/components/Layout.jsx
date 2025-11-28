@@ -5,23 +5,18 @@ const Layout = ({ children }) => {
     const location = useLocation();
 
     return (
-        <div style={{ minHeight: '100vh', paddingBottom: '100px' }}>
-            <header style={{
-                padding: '1.5rem 0',
-                borderBottom: '1px solid var(--border-color)',
-                marginBottom: '2rem',
-                backgroundColor: 'var(--bg-secondary)'
-            }}>
-                <div className="container flex justify-between items-center">
-                    <Link to="/" style={{ textDecoration: 'none' }}>
-                        <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', background: 'linear-gradient(to right, var(--accent-primary), var(--accent-secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+        <div className="min-h-screen pb-24">
+            <header className="py-6 border-b border-border-color mb-8 bg-bg-secondary">
+                <div className="container max-w-5xl mx-auto flex justify-between items-center px-4">
+                    <Link to="/" className="no-underline">
+                        <h1 className="text-2xl font-bold bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
                             TripPlanner
                         </h1>
                     </Link>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}></div>
+                    <div className="w-8 h-8 rounded-full bg-bg-card border border-border-color"></div>
                 </div>
             </header>
-            <main key={location.pathname} className="container animate-fade-in">
+            <main key={location.pathname} className="container max-w-5xl mx-auto px-4 animate-fade-in">
                 {children}
             </main>
         </div>
