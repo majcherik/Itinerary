@@ -4,31 +4,18 @@ import { FileText, Upload, CheckCircle, AlertTriangle, Plus } from 'lucide-react
 import { useParams } from 'react-router-dom';
 import { useTrip } from '../context/TripContext';
 
-const Documents = () => {
-    const { id } = useParams();
-    const { getTrip, addNote, updateTrip } = useTrip();
-    const trip = getTrip(id);
-    const notes = trip?.documents || [];
+const VisaSection = ({ trip, updateTrip }) => {
+    const [visaInfo, setVisaInfo] = React.useState(trip.visa_info || '');
 
-    const [newNote, setNewNote] = React.useState({ title: '', content: '' });
-    const [isAddingNote, setIsAddingNote] = React.useState(false);
+    React.useEffect(() => {
+        setVisaInfo(trip.visa_info || '');
+    }, [trip.visa_info]);
 
-    const handleSaveNote = () => {
-        if (!newNote.title || !newNote.content) return;
-        const note = {
-            id: Date.now(),
-            title: newNote.title,
-            content: newNote.content.split('\n'), // Split by newline for paragraphs
-            isWarning: false
-        };
-        addNote(id, note);
-        setNewNote({ title: '', content: '' });
-        setIsAddingNote(false);
+    const handleSaveVisaInfo = () => {
+        updateTrip(trip.id, { visa_info: visaInfo });
     };
 
-
-
-    const VisaSection = () => (
+    return (
         <div className="flex flex-col gap-6">
             <div className="card bg-bg-card">
                 <h3 className="font-bold text-lg mb-4">Visa Status</h3>
@@ -49,13 +36,13 @@ const Documents = () => {
                         </div>
                         <div className="flex gap-2">
                             <button
-                                onClick={() => updateTrip(id, { visa_status: 'obtained' })}
+                                onClick={() => updateTrip(trip.id, { visa_status: 'obtained' })}
                                 className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${trip.visa_status === 'obtained' ? 'bg-success/10 border-success text-success' : 'border-border-color hover:bg-bg-secondary'}`}
                             >
                                 Yes, I have it
                             </button>
                             <button
-                                onClick={() => updateTrip(id, { visa_status: 'required' })}
+                                onClick={() => updateTrip(trip.id, { visa_status: 'required' })}
                                 className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${trip.visa_status === 'required' ? 'bg-warning/10 border-warning text-warning' : 'border-border-color hover:bg-bg-secondary'}`}
                             >
                                 No / Not yet
@@ -66,11 +53,14 @@ const Documents = () => {
                     <div>
                         <label className="text-sm font-medium mb-1 block">Visa Details / Notes</label>
                         <textarea
-                            className="input min-h-[80px]"
+                            className="input min-h-[80px] mb-2"
                             placeholder="e.g. Valid until Dec 2025, allows 90 days stay..."
-                            value={trip.visa_info || ''}
-                            onChange={(e) => updateTrip(id, { visa_info: e.target.value })}
+                            value={visaInfo}
+                            onChange={(e) => setVisaInfo(e.target.value)}
                         />
+                        <div className="flex justify-end">
+                            <button onClick={handleSaveVisaInfo} className="btn btn-sm btn-primary">Save Details</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -105,8 +95,27 @@ const Documents = () => {
             </div>
         </div>
     );
+};
 
-    const NotesSection = () => (
+const NotesSection = ({ trip, addNote }) => {
+    const [newNote, setNewNote] = React.useState({ title: '', content: '' });
+    const [isAddingNote, setIsAddingNote] = React.useState(false);
+    const notes = trip?.documents || [];
+
+    const handleSaveNote = () => {
+        if (!newNote.title || !newNote.content) return;
+        const note = {
+            id: Date.now(),
+            title: newNote.title,
+            content: newNote.content.split('\n'), // Split by newline for paragraphs
+            isWarning: false
+        };
+        addNote(trip.id, note);
+        setNewNote({ title: '', content: '' });
+        setIsAddingNote(false);
+    };
+
+    return (
         <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center">
                 <h3 className="font-bold text-lg">Destination Notes</h3>
@@ -155,10 +164,18 @@ const Documents = () => {
             </div>
         </div>
     );
+};
+
+const Documents = () => {
+    const { id } = useParams();
+    const { getTrip, addNote, updateTrip } = useTrip();
+    const trip = getTrip(id);
+
+    if (!trip) return <div>Loading...</div>;
 
     const tabs = [
-        { id: 'visa', label: 'Visas & Docs', content: <VisaSection /> },
-        { id: 'notes', label: 'Destination Info', content: <NotesSection /> },
+        { id: 'visa', label: 'Visas & Docs', content: <VisaSection trip={trip} updateTrip={updateTrip} /> },
+        { id: 'notes', label: 'Destination Info', content: <NotesSection trip={trip} addNote={addNote} /> },
     ];
 
     return (

@@ -103,6 +103,8 @@ export const TripProvider = ({ children }) => {
             if (updates.endDate) dbUpdates.end_date = updates.endDate;
             if (updates.city) dbUpdates.city = updates.city;
             if (updates.heroImage) dbUpdates.hero_image = updates.heroImage;
+            if (updates.visa_status) dbUpdates.visa_status = updates.visa_status;
+            if (updates.visa_info) dbUpdates.visa_info = updates.visa_info;
 
             const { data, error } = await supabase
                 .from('trips')
