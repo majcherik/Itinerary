@@ -1,6 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
 
+// Cast Link to any to avoid "cannot be used as a JSX component" error
+const LinkAny = Link as any;
+
 const YEAR = new Date().getFullYear();
 
 const LINKS = [
@@ -20,12 +23,12 @@ export default function Footer() {
                     <ul className="flex flex-wrap items-center justify-center gap-6">
                         {LINKS.map(({ title, href }, key) => (
                             <li key={key}>
-                                <Link
+                                <LinkAny
                                     href={href}
                                     className="text-foreground hover:text-primary text-sm transition-colors"
                                 >
                                     {title}
-                                </Link>
+                                </LinkAny>
                             </li>
                         ))}
                     </ul>
