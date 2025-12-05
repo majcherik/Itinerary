@@ -153,7 +153,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ trip, onClose }) => {
                                             <CommandItem
                                                 key={category}
                                                 value={category}
-                                                onSelect={(currentValue) => {
+                                                onSelect={(currentValue: string) => {
                                                     // Capitalize first letter for display if needed, but value is what matters
                                                     // CommandItem lowercases value, so we use the original category string if it matches
                                                     const match = categories.find(c => c.toLowerCase() === currentValue.toLowerCase());
