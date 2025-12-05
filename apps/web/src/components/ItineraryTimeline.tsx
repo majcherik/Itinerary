@@ -29,7 +29,7 @@ const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({ items }) => {
     }
 
     return (
-        <div className="w-full h-[600px] flex justify-center items-start isolate z-0 px-4">
+        <div id="itinerary-timeline-container" className="w-full h-[600px] flex justify-center items-start isolate z-0 px-4">
             <div className="w-full max-w-4xl h-full">
                 {/* @ts-ignore */}
                 <Chrono

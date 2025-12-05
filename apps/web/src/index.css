@@ -196,3 +196,24 @@ button {
         color: var(--text-primary);
     }
 }
+
+/* React Chrono Timeline Overrides */
+#itinerary-timeline-container .timeline-item-title {
+    color: var(--text-primary) !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    white-space: nowrap !important;
+    font-size: 0.9rem !important;
+}
+
+#itinerary-timeline-container .timeline-item-title * {
+    color: var(--text-primary) !important;
+    display: inline-block !important;
+    margin: 0 !important;
+}
+
+#itinerary-timeline-container .card-content-wrapper {
+    background: transparent !important;
+}
