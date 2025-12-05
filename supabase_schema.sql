@@ -10,6 +10,8 @@ create table public.trips (
   end_date date,
   city text,
   hero_image text,
+  visa_status text,
+  visa_info text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 alter table public.trips enable row level security;

@@ -1,0 +1,69 @@
+
+> build
+> turbo run build
+
+turbo 2.6.1
+
+• Packages in scope: @itinerary/shared, mobile, temp-app
+• Running build in 3 packages
+• Remote caching disabled
+temp-app:build: cache miss, executing 7f424c3888f4db48
+temp-app:build: 
+temp-app:build: > temp-app@0.0.0 build
+temp-app:build: > next build --webpack
+temp-app:build: 
+temp-app:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+temp-app:build:    ▲ Next.js 16.0.5 (webpack)
+temp-app:build:    - Environments: .env.local
+temp-app:build: 
+temp-app:build:    Creating an optimized production build ...
+temp-app:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+temp-app:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+temp-app:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+temp-app:build:  ✓ Compiled successfully in 1008.7ms
+temp-app:build:    Running TypeScript ...
+temp-app:build:    Collecting page data using 7 workers ...
+temp-app:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+temp-app:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+temp-app:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+temp-app:build: [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+temp-app:build: Supabase Config: { urlPresent: true, keyPresent: true, url: 'https://zo...' }
+temp-app:build: Supabase Config: { urlPresent: true, keyPresent: true, url: 'https://zo...' }
+temp-app:build: Error: Failed to collect configuration for /trip/[id]
+temp-app:build:     at ignore-listed frames {
+temp-app:build:   [cause]: TypeError: h(...).createContext is not a function
+temp-app:build:       at 8698 (.next/server/chunks/920.js:1:1582)
+temp-app:build:       at Function.g (.next/server/webpack-runtime.js:1:135)
+temp-app:build: }
+temp-app:build: Error: Failed to collect configuration for /_not-found
+temp-app:build:     at ignore-listed frames {
+temp-app:build:   [cause]: TypeError: h(...).createContext is not a function
+temp-app:build:       at 8698 (.next/server/chunks/920.js:1:1582)
+temp-app:build:       at Function.g (.next/server/webpack-runtime.js:1:135)
+temp-app:build: }
+temp-app:build: Supabase Config: { urlPresent: true, keyPresent: true, url: 'https://zo...' }
+temp-app:build: Error: Failed to collect configuration for /
+temp-app:build:     at ignore-listed frames {
+temp-app:build:   [cause]: TypeError: h(...).createContext is not a function
+temp-app:build:       at 8698 (.next/server/chunks/920.js:1:1582)
+temp-app:build:       at Function.g (.next/server/webpack-runtime.js:1:135)
+temp-app:build: }
+temp-app:build: 
+temp-app:build: > Build error occurred
+temp-app:build: Error: Failed to collect page data for /_not-found
+temp-app:build:     at ignore-listed frames {
+temp-app:build:   type: 'Error'
+temp-app:build: }
+temp-app:build: npm ERR! Lifecycle script `build` failed with error: 
+temp-app:build: npm ERR! Error: command failed 
+temp-app:build: npm ERR!   in workspace: temp-app@0.0.0 
+temp-app:build: npm ERR!   at location: /Users/erik/Antigravity_projects/Itinerary/apps/web 
+temp-app:build: ERROR: command finished with error: command (/Users/erik/Antigravity_projects/Itinerary/apps/web) /Users/erik/.nvm/versions/node/v20.10.0/bin/npm run build exited (1)
+temp-app#build: command (/Users/erik/Antigravity_projects/Itinerary/apps/web) /Users/erik/.nvm/versions/node/v20.10.0/bin/npm run build exited (1)
+
+ Tasks:    0 successful, 1 total
+Cached:    0 cached, 1 total
+  Time:    4.213s 
+Failed:    temp-app#build
+
+ ERROR  run failed: command  exited (1)
