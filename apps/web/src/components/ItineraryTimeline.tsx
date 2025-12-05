@@ -43,7 +43,7 @@ const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({ items }) => {
                         titleColor: '#2d2438', // text-primary
                         titleColorActive: '#e0525e', // accent-primary
                         dateColor: '#2d2438', // Ensure dates are visible
-                    }}
+                    } as any}
                     cardHeight={100}
                     buttonTexts={{
                         first: 'Jump to First',
