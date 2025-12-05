@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+
+// Cast Link to any to avoid "cannot be used as a JSX component" error
+const LinkAny = Link as any;
 import Tabs from '../components/Tabs';
 import CurrencyConverter from '../components/CurrencyConverter';
 import CurrencyCalculator from '../components/CurrencyCalculator';
@@ -122,9 +125,9 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
         return (
             <div className="flex flex-col items-center justify-center h-[50vh] gap-4">
                 <h2 className="text-2xl font-bold text-text-secondary">Trip not found</h2>
-                <Link href="/" className="btn btn-primary">
+                <LinkAny href="/" className="btn btn-primary">
                     Return to Dashboard
-                </Link>
+                </LinkAny>
             </div>
         );
     }

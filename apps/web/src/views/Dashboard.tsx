@@ -2,6 +2,9 @@ import React from 'react';
 import { toast } from 'sonner';
 import { Calendar, Plus, Trash2, Edit2, X, Clock } from 'lucide-react';
 import Link from 'next/link';
+
+// Cast Link to any to avoid "cannot be used as a JSX component" error
+const LinkAny = Link as any;
 import { useTrip, useDocumentTitle, useCountdown, Trip } from '@itinerary/shared';
 import { Skeleton } from '../components/ui/skeleton';
 
@@ -146,7 +149,7 @@ const Dashboard: React.FC = () => {
                         const dateString = `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}, ${endDate.getFullYear()}`;
 
                         return (
-                            <Link href={`/trip/${trip.id}`} key={trip.id} className="card p-0 overflow-hidden hover:shadow-lg transition-all group relative">
+                            <LinkAny href={`/trip/${trip.id}`} key={trip.id} className="card p-0 overflow-hidden hover:shadow-lg transition-all group relative">
                                 {/* Action Buttons */}
                                 <div className="absolute top-2 right-2 flex gap-2 z-10">
                                     <button
@@ -176,7 +179,7 @@ const Dashboard: React.FC = () => {
                                         <span>{dateString}</span>
                                     </div>
                                 </div>
-                            </Link>
+                            </LinkAny>
                         );
                     })}
                 </div>
