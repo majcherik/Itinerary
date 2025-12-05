@@ -50,7 +50,6 @@ const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({ items }) => {
                         next: 'Next',
                         previous: 'Previous',
                     }}
-                    hideControls
                 />
             </div>
         </div>
