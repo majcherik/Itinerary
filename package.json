@@ -6,7 +6,7 @@
         "packages/*"
     ],
     "scripts": {
-        "build": "turbo run build",
+        "build": "turbo run build && rm -rf .next && cp -r apps/web/.next .next && cp apps/web/next.config.js . && cp -r apps/web/public .",
         "dev": "turbo run dev",
         "lint": "turbo run lint",
         "format": "prettier --write \"**/*.{ts,tsx,md}\""
