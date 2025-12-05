@@ -24,7 +24,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     <div className="w-8 h-8 rounded-full bg-bg-card border border-border-color"></div>
                 </div>
             </header>
-            <main key={pathname} className="container max-w-5xl mx-auto px-4 animate-fade-in">
+            <main className="container max-w-5xl mx-auto px-4 animate-fade-in">
                 {children}
             </main>
         </div>

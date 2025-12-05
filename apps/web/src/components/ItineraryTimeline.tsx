@@ -42,6 +42,7 @@ const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({ items }) => {
                         cardDetailsColor: '#2d2438', // text-primary
                         titleColor: '#2d2438', // text-primary
                         titleColorActive: '#e0525e', // accent-primary
+                        dateColor: '#2d2438', // Ensure dates are visible
                     }}
                     cardHeight={100}
                     buttonTexts={{
