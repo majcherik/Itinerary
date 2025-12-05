@@ -14,6 +14,14 @@ interface ExpensesTabProps {
 
 const COLORS = ['#e0525e', '#FFBB28', '#00C49F', '#0088FE', '#FF8042', '#8884d8'];
 
+// Cast Recharts components to any to avoid "cannot be used as a JSX component" error
+const PieChartAny = PieChart as any;
+const PieAny = Pie as any;
+const CellAny = Cell as any;
+const ResponsiveContainerAny = ResponsiveContainer as any;
+const TooltipAny = Tooltip as any;
+const LegendAny = Legend as any;
+
 const ExpensesTab: React.FC<ExpensesTabProps> = ({ trip }) => {
     const { deleteExpense } = useTrip();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -136,9 +144,9 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({ trip }) => {
                         <div className="card p-4 flex flex-col items-center">
                             <h4 className="font-bold mb-4">By Category</h4>
                             <div className="w-full h-[250px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
+                                <ResponsiveContainerAny width="100%" height="100%">
+                                    <PieChartAny>
+                                        <PieAny
                                             data={expensesByCategory}
                                             cx="50%"
                                             cy="50%"
@@ -148,21 +156,21 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({ trip }) => {
                                             dataKey="value"
                                         >
                                             {expensesByCategory.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                <CellAny key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                             ))}
-                                        </Pie>
-                                        <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
-                                        <Legend />
-                                    </PieChart>
-                                </ResponsiveContainer>
+                                        </PieAny>
+                                        <TooltipAny formatter={(value: number) => `$${value.toFixed(2)}`} />
+                                        <LegendAny />
+                                    </PieChartAny>
+                                </ResponsiveContainerAny>
                             </div>
                         </div>
                         <div className="card p-4 flex flex-col items-center">
                             <h4 className="font-bold mb-4">By Payer</h4>
                             <div className="w-full h-[250px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
+                                <ResponsiveContainerAny width="100%" height="100%">
+                                    <PieChartAny>
+                                        <PieAny
                                             data={expensesByPayer}
                                             cx="50%"
                                             cy="50%"
@@ -172,13 +180,13 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({ trip }) => {
                                             dataKey="value"
                                         >
                                             {expensesByPayer.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                <CellAny key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                             ))}
-                                        </Pie>
-                                        <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
-                                        <Legend />
-                                    </PieChart>
-                                </ResponsiveContainer>
+                                        </PieAny>
+                                        <TooltipAny formatter={(value: number) => `$${value.toFixed(2)}`} />
+                                        <LegendAny />
+                                    </PieChartAny>
+                                </ResponsiveContainerAny>
                             </div>
                         </div>
                     </div>
