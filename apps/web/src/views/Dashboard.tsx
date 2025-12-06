@@ -124,14 +124,12 @@ const Dashboard: React.FC = () => {
                         </div>
                     </div>
                 )}
-                <button onClick={openAddModal} className="btn btn-primary flex items-center gap-2">
-                    <Plus size={20} /> New Trip
-                </button>
-            </div>
-
-            {/* Widgets Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <WorldClock />
+                <div className="flex gap-3">
+                    <WorldClock />
+                    <button onClick={openAddModal} className="btn btn-primary flex items-center gap-2">
+                        <Plus size={20} /> New Trip
+                    </button>
+                </div>
             </div>
 
             {loading ? (

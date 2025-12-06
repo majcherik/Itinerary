@@ -6,6 +6,18 @@ import {
     RelativeTimeZoneDisplay,
     RelativeTimeZoneLabel,
 } from '@/components/ui/shadcn-io/relative-time';
+import { Button } from '@/components/ui/button';
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+} from '@/components/ui/drawer';
+import { Globe } from 'lucide-react';
 
 const timezones = [
     { label: 'NYC', zone: 'America/New_York' },
@@ -17,20 +29,38 @@ const timezones = [
 ];
 
 const WorldClock = () => (
-    <div className="card p-4 h-full flex flex-col gap-4">
-        <div className="flex items-center gap-2 mb-2">
-            <h3 className="font-bold text-lg">World Clock</h3>
-        </div>
-        <RelativeTime dateFormatOptions={{ dateStyle: 'full' }} className="gap-3">
-            {timezones.map(({ zone, label }) => (
-                <RelativeTimeZone key={zone} zone={zone}>
-                    <RelativeTimeZoneLabel>{label}</RelativeTimeZoneLabel>
-                    <RelativeTimeZoneDate className="hidden sm:block text-muted-foreground" />
-                    <RelativeTimeZoneDisplay className="pl-2 ml-auto font-medium text-text-primary" />
-                </RelativeTimeZone>
-            ))}
-        </RelativeTime>
-    </div>
+    <Drawer direction="right">
+        <DrawerTrigger asChild>
+            <Button variant="outline" className="gap-2">
+                <Globe size={16} />
+                World Clock
+            </Button>
+        </DrawerTrigger>
+        <DrawerContent>
+            <DrawerHeader>
+                <DrawerTitle>World Clock</DrawerTitle>
+                <DrawerDescription>
+                    Current time across major cities.
+                </DrawerDescription>
+            </DrawerHeader>
+            <div className="p-4">
+                <RelativeTime dateFormatOptions={{ dateStyle: 'full' }} className="gap-4">
+                    {timezones.map(({ zone, label }) => (
+                        <RelativeTimeZone key={zone} zone={zone}>
+                            <RelativeTimeZoneLabel>{label}</RelativeTimeZoneLabel>
+                            <RelativeTimeZoneDate className="text-muted-foreground text-sm" />
+                            <RelativeTimeZoneDisplay className="pl-2 ml-auto font-medium text-text-primary" />
+                        </RelativeTimeZone>
+                    ))}
+                </RelativeTime>
+            </div>
+            <DrawerFooter>
+                <DrawerClose asChild>
+                    <Button variant="outline">Close</Button>
+                </DrawerClose>
+            </DrawerFooter>
+        </DrawerContent>
+    </Drawer>
 );
 
 export default WorldClock;
