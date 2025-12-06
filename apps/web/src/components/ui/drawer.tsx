@@ -5,29 +5,31 @@ import { Drawer as DrawerPrimitive } from "vaul"
 
 import { cn } from "@/lib/utils"
 
+const DrawerPrimitiveAny = DrawerPrimitive as any;
+
 const Drawer = ({
     shouldScaleBackground = true,
     ...props
 }: any) => (
-    <DrawerPrimitive.Root
+    <DrawerPrimitiveAny.Root
         shouldScaleBackground={shouldScaleBackground}
         {...props}
     />
 )
 Drawer.displayName = "Drawer"
 
-const DrawerTrigger = DrawerPrimitive.Trigger
+const DrawerTrigger = DrawerPrimitiveAny.Trigger
 
-const DrawerPortal = DrawerPrimitive.Portal
+const DrawerPortal = DrawerPrimitiveAny.Portal
 
-const DrawerClose = DrawerPrimitive.Close
+const DrawerClose = DrawerPrimitiveAny.Close
 
 // Cast to any to avoid strict type incompatibilities with vaul/react-18
 const DrawerOverlay = React.forwardRef<
     HTMLDivElement,
     any
 >(({ className, ...props }, ref) => (
-    <DrawerPrimitive.Overlay
+    <DrawerPrimitiveAny.Overlay
         ref={ref}
         className={cn(
             "fixed inset-0 z-50 bg-black/80",
@@ -44,7 +46,7 @@ const DrawerContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
     <DrawerPortal>
         <DrawerOverlay />
-        <DrawerPrimitive.Content
+        <DrawerPrimitiveAny.Content
             ref={ref}
             className={cn(
                 "group/drawer-content bg-background fixed z-50 flex h-auto flex-col border",
@@ -59,7 +61,7 @@ const DrawerContent = React.forwardRef<
             {/* Handle for bottom drawer - hidden for right drawer */}
             <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted group-data-[vaul-drawer-direction=right]/drawer-content:hidden" />
             {children}
-        </DrawerPrimitive.Content>
+        </DrawerPrimitiveAny.Content>
     </DrawerPortal>
 ))
 DrawerContent.displayName = "DrawerContent"
@@ -90,7 +92,7 @@ const DrawerTitle = React.forwardRef<
     HTMLHeadingElement,
     any
 >(({ className, ...props }, ref) => (
-    <DrawerPrimitive.Title
+    <DrawerPrimitiveAny.Title
         ref={ref}
         className={cn(
             "text-lg font-semibold leading-none tracking-tight",
@@ -105,7 +107,7 @@ const DrawerDescription = React.forwardRef<
     HTMLParagraphElement,
     any
 >(({ className, ...props }, ref) => (
-    <DrawerPrimitive.Description
+    <DrawerPrimitiveAny.Description
         ref={ref}
         className={cn("text-sm text-muted-foreground", className)}
         {...props}
