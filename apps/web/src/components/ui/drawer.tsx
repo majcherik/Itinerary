@@ -24,7 +24,7 @@ const DrawerClose = DrawerPrimitive.Close
 
 // Cast to any to avoid strict type incompatibilities with vaul/react-18
 const DrawerOverlay = React.forwardRef<
-    React.ElementRef<typeof DrawerPrimitive.Overlay>,
+    HTMLDivElement,
     any
 >(({ className, ...props }, ref) => (
     <DrawerPrimitive.Overlay
@@ -39,7 +39,7 @@ const DrawerOverlay = React.forwardRef<
 DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName
 
 const DrawerContent = React.forwardRef<
-    React.ElementRef<typeof DrawerPrimitive.Content>,
+    HTMLDivElement,
     any
 >(({ className, children, ...props }, ref) => (
     <DrawerPortal>
@@ -87,7 +87,7 @@ const DrawerFooter = ({
 DrawerFooter.displayName = "DrawerFooter"
 
 const DrawerTitle = React.forwardRef<
-    React.ElementRef<typeof DrawerPrimitive.Title>,
+    HTMLHeadingElement,
     any
 >(({ className, ...props }, ref) => (
     <DrawerPrimitive.Title
@@ -102,7 +102,7 @@ const DrawerTitle = React.forwardRef<
 DrawerTitle.displayName = DrawerPrimitive.Title.displayName
 
 const DrawerDescription = React.forwardRef<
-    React.ElementRef<typeof DrawerPrimitive.Description>,
+    HTMLParagraphElement,
     any
 >(({ className, ...props }, ref) => (
     <DrawerPrimitive.Description
