@@ -49,7 +49,7 @@ const DrawerContent = React.forwardRef<
         <DrawerPrimitiveAny.Content
             ref={ref}
             className={cn(
-                "group/drawer-content bg-background fixed z-50 flex h-auto flex-col border",
+                "group/drawer-content bg-white fixed z-50 flex h-auto flex-col border",
                 // Right direction styles
                 "data-[vaul-drawer-direction=right]:inset-y-0 data-[vaul-drawer-direction=right]:right-0 data-[vaul-drawer-direction=right]:w-3/4 data-[vaul-drawer-direction=right]:sm:max-w-sm",
                 // Default bottom styles (fallback)
