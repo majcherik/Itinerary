@@ -198,7 +198,12 @@ button {
 }
 
 /* React Chrono Timeline Overrides */
-#itinerary-timeline-container .timeline-item-title {
+/* React Chrono Timeline Overrides */
+#itinerary-timeline-container .timeline-item-title,
+#itinerary-timeline-container .chrono-date-wrapper,
+#itinerary-timeline-container header,
+#itinerary-timeline-container span[role="button"],
+#itinerary-timeline-container div[class*="title"] {
     color: var(--text-primary) !important;
     display: flex !important;
     flex-direction: row !important;
@@ -206,12 +211,22 @@ button {
     gap: 0.5rem !important;
     white-space: nowrap !important;
     font-size: 0.9rem !important;
+    text-shadow: none !important;
 }
 
-#itinerary-timeline-container .timeline-item-title * {
+#itinerary-timeline-container .timeline-item-title *,
+#itinerary-timeline-container .chrono-date-wrapper * {
     color: var(--text-primary) !important;
     display: inline-block !important;
     margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Force single line for dates that might be split */
+#itinerary-timeline-container div[class*="date"] {
+    display: flex !important;
+    flex-direction: row !important;
+    white-space: nowrap !important;
 }
 
 #itinerary-timeline-container .card-content-wrapper {

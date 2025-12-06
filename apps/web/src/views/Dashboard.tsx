@@ -7,6 +7,7 @@ import Link from 'next/link';
 const LinkAny = Link as any;
 import { useTrip, useDocumentTitle, useCountdown, Trip } from '@itinerary/shared';
 import { Skeleton } from '../components/ui/skeleton';
+import WorldClock from '../components/WorldClock';
 
 const Dashboard: React.FC = () => {
     useDocumentTitle('My Trips | TripPlanner');
@@ -126,6 +127,11 @@ const Dashboard: React.FC = () => {
                 <button onClick={openAddModal} className="btn btn-primary flex items-center gap-2">
                     <Plus size={20} /> New Trip
                 </button>
+            </div>
+
+            {/* Widgets Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <WorldClock />
             </div>
 
             {loading ? (
