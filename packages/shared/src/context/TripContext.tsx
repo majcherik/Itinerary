@@ -2,8 +2,13 @@
 
 import React, { createContext, useContext } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { createBrowserClient } from '@supabase/ssr';
 import { useAuth } from './AuthContext';
+
+const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 // Define Types
 export interface ItineraryItem {

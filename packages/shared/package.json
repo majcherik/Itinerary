@@ -5,6 +5,7 @@
     "main": "./src/index.ts",
     "types": "./src/index.d.ts",
     "dependencies": {
+        "@supabase/ssr": "^0.8.0",
         "@supabase/supabase-js": "^2.39.0",
         "@tanstack/react-query": "^5.90.11",
         "react": "^18.2.0"

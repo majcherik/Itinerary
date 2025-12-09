@@ -9,6 +9,8 @@ import Tabs from '../components/Tabs';
 import CurrencyConverter from '../components/CurrencyConverter';
 import CurrencyCalculator from '../components/CurrencyCalculator';
 import Modal from '../components/Modal';
+import ShareTripModal from '../components/ShareTripModal';
+import ExportMenu from '../components/ExportMenu';
 import { MapPin, Calendar, Home, Train, Plus, Trash2, Clock, Copy, Check, ArrowLeft, Share2, MoreVertical, Edit2, CheckCircle2, Circle, X, ExternalLink, Banknote } from 'lucide-react';
 import { useTrip, useCopyToClipboard, useDocumentTitle, useLocalStorage, Trip, ItineraryItem, AccommodationItem, TransportItem } from '@itinerary/shared';
 import FadeIn from '../components/FadeIn';
@@ -87,6 +89,7 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
     const [currency, setCurrency] = useState('USD');
     const [exchangeRate, setExchangeRate] = useState(1);
     const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useLocalStorage(`trip-details-tab-${id}`, 'itinerary');
 
     if (loading) {
@@ -247,28 +250,26 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
             </div>
             <div className="relative border-l-2 border-border-color ml-3 pl-6 space-y-8">
                 {(trip.itinerary || []).sort((a, b) => a.day - b.day).map((item, index) => (
-                    <FadeIn key={item.id || item.day} delay={index * 100}>
-                        <div className="relative">
-                            <div className="absolute -left-[2.4rem] bg-accent-primary text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-sm z-10">
-                                {item.day}
-                            </div>
-                            <div className="card group relative pr-10">
-                                <button
-                                    onClick={() => deleteItineraryItem(id as string, item.id as string)}
-                                    className="absolute top-3 right-3 p-1.5 rounded-full bg-bg-primary text-text-secondary hover:text-danger hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
-                                    title="Delete item"
-                                >
-                                    <Trash2 size={14} />
-                                </button>
-                                <span className="text-xs font-bold text-accent-primary uppercase tracking-wider">{item.date}</span>
-                                <div className="flex justify-between items-start">
-                                    <h4 className="font-bold text-lg mt-1">{item.title}</h4>
-                                    {item.cost && <span className="text-sm font-semibold text-text-primary bg-bg-secondary px-2 py-1 rounded">${item.cost}</span>}
-                                </div>
-                                <p className="text-text-secondary text-sm mt-2">{item.description}</p>
-                            </div>
+                    <div key={item.id || item.day} className="relative">
+                        <div className="absolute -left-[2.4rem] bg-accent-primary text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-sm z-10">
+                            {item.day}
                         </div>
-                    </FadeIn>
+                        <div className="card group relative pr-10">
+                            <button
+                                onClick={() => deleteItineraryItem(id as string, item.id as string)}
+                                className="absolute top-3 right-3 p-1.5 rounded-full bg-bg-primary text-text-secondary hover:text-danger hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
+                                title="Delete item"
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                            <span className="text-xs font-bold text-accent-primary uppercase tracking-wider">{item.date}</span>
+                            <div className="flex justify-between items-start">
+                                <h4 className="font-bold text-lg mt-1">{item.title}</h4>
+                                {item.cost && <span className="text-sm font-semibold text-text-primary bg-bg-secondary px-2 py-1 rounded">${item.cost}</span>}
+                            </div>
+                            <p className="text-text-secondary text-sm mt-2">{item.description}</p>
+                        </div>
+                    </div>
                 ))}
                 {(trip.itinerary || []).length === 0 && <p className="text-text-secondary italic">No itinerary items yet.</p>}
             </div>
@@ -473,13 +474,20 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                 <div className="flex-1">
                     <h1 className="text-3xl font-bold mb-1">{trip.title}</h1>
                     <p className="text-text-secondary text-sm mb-2">{dateString}</p>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
                         <button
                             onClick={() => setIsCalculatorOpen(true)}
                             className="btn btn-sm btn-outline flex items-center gap-2 text-xs"
                         >
                             <Clock size={14} /> Currency Calculator
                         </button>
+                        <button
+                            onClick={() => setIsShareModalOpen(true)}
+                            className="btn btn-sm btn-outline flex items-center gap-2 text-xs"
+                        >
+                            <Share2 size={14} /> Share Trip
+                        </button>
+                        <ExportMenu trip={trip} />
                     </div>
                 </div>
                 <div className="text-right flex flex-col items-end gap-1">
@@ -499,6 +507,13 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
             </div>
 
             {isCalculatorOpen && <CurrencyCalculator onClose={() => setIsCalculatorOpen(false)} />}
+
+            <ShareTripModal
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                tripId={trip.id}
+                tripTitle={trip.title}
+            />
 
             <Tabs
                 tabs={tabs}

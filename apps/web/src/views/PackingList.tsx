@@ -5,21 +5,7 @@ import { useTrip } from '@itinerary/shared';
 
 import Modal from '../components/Modal';
 import { cn } from '../lib/utils';
-import { Button } from '../components/ui/button';
 import { AnimatedCircularProgressBar } from '../components/ui/animated-circular-progress-bar';
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from "../components/ui/command"
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "../components/ui/popover"
 
 const PackingList: React.FC = () => {
     const { id } = useParams();
@@ -30,6 +16,7 @@ const PackingList: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [newItem, setNewItem] = React.useState({ name: '', category: 'Misc' });
     const [openCombobox, setOpenCombobox] = React.useState(false);
+    const [searchCategory, setSearchCategory] = React.useState('');
 
     const toggleItem = (itemId: number | string) => {
         const item = items.find(i => i.id === itemId);
@@ -156,72 +143,103 @@ const PackingList: React.FC = () => {
                     </div>
                     <div>
                         <label className="text-sm font-medium mb-1 block">Category</label>
-                        {/* @ts-ignore */}
-                        <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
-                            {/* @ts-ignore */}
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    aria-expanded={openCombobox}
-                                    className="w-full justify-between font-normal text-text-primary bg-bg-primary border-border-color"
-                                >
-                                    {newItem.category || "Select category..."}
-                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-bg-card border-border-color">
-                                <Command className="bg-bg-card">
-                                    <CommandInput placeholder="Search category..." className="text-text-primary" />
-                                    <CommandList>
-                                        <CommandEmpty>
-                                            <div className="p-2 text-sm text-text-secondary">
-                                                No category found.
-                                            </div>
-                                        </CommandEmpty>
-                                        <CommandGroup>
-                                            {allCategories.map((category) => (
-                                                <CommandItem
-                                                    key={category}
-                                                    value={category}
-                                                    onSelect={(currentValue: string) => {
-                                                        setNewItem({ ...newItem, category: currentValue === newItem.category ? "" : currentValue });
-                                                        setOpenCombobox(false);
-                                                    }}
-                                                    className="text-text-primary aria-selected:bg-bg-secondary"
-                                                >
-                                                    <Check
-                                                        className={cn(
-                                                            "mr-2 h-4 w-4",
-                                                            newItem.category === category ? "opacity-100" : "opacity-0"
-                                                        )}
-                                                    />
-                                                    {category}
-                                                </CommandItem>
-                                            ))}
-                                            {/* Allow creating new category by typing */}
-                                            {/* @ts-ignore */}
-                                            <CommandItem
-                                                value="create-custom"
-                                                className="text-text-secondary italic aria-selected:bg-bg-secondary"
-                                                onSelect={() => {
+                        <div className="relative">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setOpenCombobox(!openCombobox);
+                                    if (!openCombobox) setSearchCategory('');
+                                }}
+                                className={cn(
+                                    "input w-full flex justify-between items-center text-left font-normal",
+                                    !newItem.category && "text-text-secondary"
+                                )}
+                            >
+                                {newItem.category || "Select category..."}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </button>
+
+                            {openCombobox && (
+                                <>
+                                    <div
+                                        className="fixed inset-0 z-[99998]"
+                                        onClick={() => {
+                                            setOpenCombobox(false);
+                                            setSearchCategory('');
+                                        }}
+                                    />
+                                    <div
+                                        className="absolute top-full left-0 mt-1 w-full border border-gray-200 rounded-md shadow-lg z-[99999] max-h-[300px] overflow-hidden flex flex-col"
+                                        style={{ backgroundColor: '#ffffff', opacity: 1 }}
+                                    >
+                                        <div className="p-2 border-b" style={{ backgroundColor: '#ffffff' }}>
+                                            <input
+                                                type="text"
+                                                placeholder="Search category..."
+                                                value={searchCategory}
+                                                className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded"
+                                                style={{ backgroundColor: '#ffffff' }}
+                                                onChange={(e) => setSearchCategory(e.target.value)}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        </div>
+                                        <div className="overflow-y-auto p-2" style={{ backgroundColor: '#ffffff' }}>
+                                            {(() => {
+                                                const filteredCategories = allCategories.filter(cat => cat.toLowerCase().includes(searchCategory.toLowerCase()));
+
+                                                if (filteredCategories.length === 0) {
+                                                    return (
+                                                        <div className="py-6 text-center text-sm text-text-secondary">
+                                                            No category found.
+                                                        </div>
+                                                    );
+                                                }
+
+                                                return filteredCategories.map((category) => (
+                                                    <button
+                                                        key={category}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setNewItem({ ...newItem, category: category });
+                                                            setOpenCombobox(false);
+                                                            setSearchCategory('');
+                                                        }}
+                                                        className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-sm transition-colors flex items-center"
+                                                        style={{ backgroundColor: '#ffffff' }}
+                                                    >
+                                                        <Check
+                                                            className={cn(
+                                                                "mr-2 h-4 w-4 flex-shrink-0",
+                                                                newItem.category === category ? "opacity-100" : "opacity-0"
+                                                            )}
+                                                        />
+                                                        <span>{category}</span>
+                                                    </button>
+                                                ));
+                                            })()}
+                                            <button
+                                                type="button"
+                                                onClick={() => {
                                                     const custom = window.prompt("Enter new category name:");
                                                     if (custom) {
                                                         setNewItem({ ...newItem, category: custom });
                                                         setOpenCombobox(false);
+                                                        setSearchCategory('');
                                                     }
                                                 }}
+                                                className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-sm transition-colors flex items-center text-text-secondary italic border-t mt-1 pt-2"
+                                                style={{ backgroundColor: '#ffffff' }}
                                             >
                                                 <Plus className="mr-2 h-4 w-4" />
-                                                Create new category...
-                                            </CommandItem>
-                                        </CommandGroup>
-                                    </CommandList>
-                                </Command>
-                            </PopoverContent>
-                        </Popover>
+                                                Create custom...
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
                         <p className="text-[10px] text-text-secondary mt-1">
-                            * Select an existing category or choose "Create new category" to add your own.
+                            * Select an existing category or choose "Create custom" to add your own.
                         </p>
                     </div>
                 </div>

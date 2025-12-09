@@ -1,8 +1,14 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { createBrowserClient } from '@supabase/ssr';
 import { Session, User } from '@supabase/supabase-js';
+
+// Create a singleton client for the browser
+const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 interface AuthContextType {
     signUp: (email: string, password: string) => Promise<any>;
@@ -31,19 +37,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         // Check active sessions and sets the user
-        supabase.auth.getSession().then(({ data: { session }, error }) => {
+        const initializeAuth = async () => {
+            const { data: { session }, error } = await supabase.auth.getSession();
             if (error) {
                 console.error('Error getting session:', error);
-                supabase.auth.signOut();
             }
             setSession(session);
             setUser(session?.user ?? null);
             setLoading(false);
-        }).catch((err) => {
-            console.error('Unexpected error getting session:', err);
-            supabase.auth.signOut();
-            setLoading(false);
-        });
+        };
+
+        initializeAuth();
 
         // Listen for changes on auth state (sign in, sign out, etc.)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -70,6 +74,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const signInWithGoogle = async () => {
         return await supabase.auth.signInWithOAuth({
             provider: 'google',
+            options: {
+                redirectTo: `${window.location.origin}/auth/callback`,
+            },
         });
     };
 

@@ -9,5 +9,21 @@ export * from './hooks/use-local-storage';
 export * from './hooks/use-media-query';
 export * from './hooks/use-on-click-outside';
 export * from './hooks/use-scroll-lock';
-export * from './lib/supabase';
+
+export * from './schemas/expenses';
+export * from './hooks/use-trips';
+export * from './hooks/use-expenses';
+export * from './lib/database.types';
+export * from './lib/constants';
 export * from './lib/utils';
+
+// PDF Generators
+export * from './lib/pdf-generators/itinerary-pdf';
+export * from './lib/pdf-generators/packing-list-pdf';
+export * from './lib/pdf-generators/ticket-wallet-pdf';
+
+// Exporters
+export * from './lib/exporters/calendar-export';
+export * from './lib/exporters/maps-export';
+export * from './lib/exporters/expenses-csv';
+export * from './lib/exporters/json-export';
