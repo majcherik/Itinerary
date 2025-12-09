@@ -7,7 +7,6 @@ import { Button } from '../../../src/components/ui/button';
 import { Input } from '../../../src/components/ui/input';
 import { Skeleton } from '../../../src/components/ui/skeleton';
 import { toast } from 'sonner';
-import Link from 'next/link';
 import Tabs from '../../../src/components/Tabs';
 import ItineraryTimeline from '../../../src/components/ItineraryTimeline';
 import type { Trip } from '@itinerary/shared';
@@ -105,9 +104,9 @@ const SharedTripView: React.FC<SharedTripViewProps> = ({ token }) => {
                     <AlertCircle className="w-16 h-16 text-primary mx-auto" />
                     <h1 className="text-2xl font-bold text-text-primary">Oops!</h1>
                     <p className="text-text-secondary">{error}</p>
-                    <Link href="/">
+                    <a href="/">
                         <Button className="bg-primary hover:bg-primary/90">Go to Homepage</Button>
-                    </Link>
+                    </a>
                 </div>
             </div>
         );
