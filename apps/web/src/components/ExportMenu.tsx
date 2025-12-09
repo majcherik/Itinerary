@@ -52,7 +52,7 @@ const ExportMenu: React.FC<ExportMenuProps> = ({ trip }) => {
             switch (type) {
                 case 'itinerary-pdf': {
                     const pdfBytes = await generateItineraryPDF(trip);
-                    const blob = new Blob([pdfBytes.buffer], { type: 'application/pdf' });
+                    const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
                     downloadFile(blob, `${tripTitle}_itinerary.pdf`);
                     toast.success('Itinerary PDF downloaded!');
                     break;
@@ -60,7 +60,7 @@ const ExportMenu: React.FC<ExportMenuProps> = ({ trip }) => {
 
                 case 'packing-pdf': {
                     const pdfBytes = await generatePackingListPDF(trip);
-                    const blob = new Blob([pdfBytes.buffer], { type: 'application/pdf' });
+                    const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
                     downloadFile(blob, `${tripTitle}_packing_list.pdf`);
                     toast.success('Packing List PDF downloaded!');
                     break;
@@ -68,7 +68,7 @@ const ExportMenu: React.FC<ExportMenuProps> = ({ trip }) => {
 
                 case 'tickets-pdf': {
                     const pdfBytes = await generateTicketWalletPDF(trip);
-                    const blob = new Blob([pdfBytes.buffer], { type: 'application/pdf' });
+                    const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
                     downloadFile(blob, `${tripTitle}_tickets.pdf`);
                     toast.success('Ticket Wallet PDF downloaded!');
                     break;
