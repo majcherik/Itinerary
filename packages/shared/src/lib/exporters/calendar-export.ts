@@ -71,7 +71,7 @@ export async function generateCalendarExport(trip: Trip): Promise<string> {
                     title: item.title,
                     description: item.description || '',
                     start: startDate,
-                    end: endDate,
+                    end: endDate || startDate,
                     location: trip.city || '',
                     categories: ['Trip', trip.title || 'Travel'],
                     status: 'CONFIRMED',
