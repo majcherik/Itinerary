@@ -55,6 +55,7 @@ const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({ items }) => {
             className="w-full flex justify-center items-start px-4 py-8"
         >
             <div className="w-full max-w-6xl">
+                {/* @ts-ignore */}
                 <Chrono
                     items={timelineItems}
                     mode="VERTICAL_ALTERNATING"
