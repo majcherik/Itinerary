@@ -215,6 +215,7 @@ const ShareTripModal: React.FC<ShareTripModalProps> = ({
                             {/* QR Code display */}
                             {showQr && (
                                 <div className="flex justify-center p-4 bg-white rounded-lg">
+                                    {/* @ts-ignore */}
                                     <QRCode value={shareUrl} size={200} />
                                 </div>
                             )}
