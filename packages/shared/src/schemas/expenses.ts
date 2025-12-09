@@ -13,4 +13,11 @@ export const createExpenseSchema = (members: string[] = []) => z.object({
     splitWith: z.array(z.string()).min(1, "Must split with at least one person"),
 });
 
-export type CreateExpenseInput = z.infer<ReturnType<typeof createExpenseSchema>>;
+export type CreateExpenseInput = {
+    description: string;
+    amount: number;
+    date: string;
+    category: string;
+    payer: string;
+    splitWith: string[];
+};

@@ -22,7 +22,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ trip, onClose }) => {
     const [searchCategory, setSearchCategory] = useState('');
 
     const form = useForm<CreateExpenseInput>({
-        resolver: zodResolver(createExpenseSchema(members)),
+        resolver: zodResolver(createExpenseSchema(members)) as any,
         defaultValues: {
             description: '',
             amount: 0,
