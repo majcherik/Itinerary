@@ -191,7 +191,7 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
 
     const addTripMutation = useMutation({
         mutationFn: async (tripData: any) => {
-            const { data, error } = await supabase
+            const { data, error} = await supabase
                 .from('trips')
                 .insert([{
                     user_id: user?.id,
@@ -200,7 +200,7 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                     end_date: tripData.endDate,
                     city: tripData.city,
                     hero_image: tripData.heroImage
-                }])
+                }] as any)
                 .select()
                 .single();
             if (error) throw error;
@@ -253,7 +253,7 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                     notes: item.description,
                     cost: item.cost,
                     time: item.time || null
-                }])
+                }]) as any
                 .select()
                 .single();
             if (error) throw error;
@@ -282,7 +282,7 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                     check_out: item.checkOut,
                     notes: `Type: ${item.type}. ${item.notes || ''}`,
                     cost: item.cost
-                }])
+                }]) as any
                 .select()
                 .single();
             if (error) throw error;
@@ -312,7 +312,7 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                     departure_time: item.depart,
                     arrival_time: item.arrive,
                     cost: item.cost
-                }])
+                }]) as any
                 .select()
                 .single();
             if (error) throw error;
@@ -342,7 +342,7 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                     arrival_time: ticket.arrives,
                     notes: ticket.notes,
                     file_url: ticket.file
-                }])
+                }]) as any
                 .select()
                 .single();
             if (error) throw error;
@@ -368,7 +368,7 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                     item: item.text,
                     category: item.category,
                     is_packed: item.checked
-                }])
+                }]) as any
                 .select()
                 .single();
             if (error) throw error;
@@ -421,7 +421,7 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                     title: note.title,
                     content: note.content,
                     type: 'note'
-                }])
+                }]) as any
                 .select()
                 .single();
             if (error) throw error;
@@ -450,7 +450,7 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                     date: expense.date,
                     category: expense.category,
                     split_with: expense.splitWith
-                }])
+                }]) as any
                 .select()
                 .single();
             if (error) throw error;

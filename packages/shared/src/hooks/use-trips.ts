@@ -39,7 +39,7 @@ export function useAddTrip() {
         mutationFn: async (newTrip: Database['public']['Tables']['trips']['Insert']) => {
             const { data, error } = await supabase
                 .from('trips')
-                .insert(newTrip)
+                .insert(newTrip as any)
                 .select()
                 .single();
 
