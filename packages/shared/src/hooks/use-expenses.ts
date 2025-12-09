@@ -15,11 +15,11 @@ export function useAddExpense() {
     return useMutation({
         mutationFn: async ({ tripId, expense }: { tripId: number | string, expense: Database['public']['Tables']['expenses']['Insert'] }) => {
             const { data, error } = await supabase
-                .from('expenses' as any)
+                .from('expenses')
                 .insert({
                     ...expense,
                     trip_id: Number(tripId)
-                })
+                } as any)
                 .select()
                 .single();
 
