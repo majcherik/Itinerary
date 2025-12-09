@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { MapPin, Calendar, Lock, AlertCircle } from 'lucide-react';
 import { Button } from '../../../src/components/ui/button';
 import { Input } from '../../../src/components/ui/input';
@@ -16,7 +15,6 @@ interface SharedTripViewProps {
 }
 
 const SharedTripView: React.FC<SharedTripViewProps> = ({ token }) => {
-    const router = useRouter();
     const [trip, setTrip] = useState<Trip | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -314,11 +312,11 @@ const SharedTripView: React.FC<SharedTripViewProps> = ({ token }) => {
                     <p className="text-white/90 mb-6">
                         Start planning your next adventure with our easy-to-use trip planner
                     </p>
-                    <Link href="/">
+                    <a href="/">
                         <Button className="bg-white text-primary hover:bg-white/90">
                             Get Started
                         </Button>
-                    </Link>
+                    </a>
                 </div>
             </div>
         </div>
