@@ -208,7 +208,7 @@ const SharedTripView: React.FC<SharedTripViewProps> = ({ token }) => {
                 <Tabs
                     tabs={[
                         {
-                            key: 'itinerary',
+                            id: 'itinerary',
                             label: 'Itinerary',
                             content: (
                                 <div className="space-y-4">
@@ -258,7 +258,7 @@ const SharedTripView: React.FC<SharedTripViewProps> = ({ token }) => {
                             ),
                         },
                         {
-                            key: 'timeline',
+                            id: 'timeline',
                             label: 'Timeline',
                             content: trip.itinerary ? (
                                 <ItineraryTimeline items={trip.itinerary} />
@@ -269,7 +269,7 @@ const SharedTripView: React.FC<SharedTripViewProps> = ({ token }) => {
                             ),
                         },
                         {
-                            key: 'accommodation',
+                            id: 'accommodation',
                             label: 'Accommodation',
                             content: (
                                 <div className="space-y-4">
