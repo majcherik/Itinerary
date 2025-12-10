@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import Tabs from '../../../src/components/Tabs';
 import ItineraryTimeline from '../../../src/components/ItineraryTimeline';
 import type { Trip } from '@itinerary/shared';
+import { formatDate } from '@itinerary/shared';
 
 interface SharedTripViewProps {
     token: string;
@@ -149,20 +150,6 @@ const SharedTripView: React.FC<SharedTripViewProps> = ({ token }) => {
         return null;
     }
 
-    const formatDate = (dateStr: string | null) => {
-        if (!dateStr) return 'N/A';
-        try {
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-            });
-        } catch {
-            return dateStr;
-        }
-    };
-
     return (
         <div className="min-h-screen bg-background">
             {/* Header */}
@@ -234,7 +221,7 @@ const SharedTripView: React.FC<SharedTripViewProps> = ({ token }) => {
                                                         {item.title}
                                                     </h3>
                                                     <p className="text-sm text-text-secondary">
-                                                        {item.date || `Day ${item.day}`}
+                                                        {item.date ? formatDate(item.date) : `Day ${item.day}`}
                                                         {item.time && ` • ${item.time}`}
                                                     </p>
                                                     {item.description && (

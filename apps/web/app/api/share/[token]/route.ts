@@ -1,23 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createClient } from '@supabase/supabase-js';
 
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ token: string }> }
 ) {
     try {
         const { token } = await params;
-        const cookieStore = await cookies();
-        const supabase = createServerClient(
+
+        // Use service role key to bypass RLS for public share links
+        const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
             {
-                cookies: {
-                    get(name: string) {
-                        return cookieStore.get(name)?.value;
-                    },
-                },
+                auth: {
+                    autoRefreshToken: false,
+                    persistSession: false
+                }
             }
         );
 

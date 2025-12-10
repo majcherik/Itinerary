@@ -1,4 +1,5 @@
 import type { Trip } from '../../context/TripContext';
+import { formatDate } from '../utils';
 
 /**
  * Generates a CSV file with all expenses from a trip
@@ -16,21 +17,6 @@ export function generateExpensesCSV(trip: Trip): string {
             return `"${str.replace(/"/g, '""')}"`;
         }
         return str;
-    };
-
-    // Format date
-    const formatDate = (dateStr: string | null): string => {
-        if (!dateStr) return '';
-        try {
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', {
-                month: '2-digit',
-                day: '2-digit',
-                year: 'numeric',
-            });
-        } catch {
-            return dateStr;
-        }
     };
 
     // Build CSV rows

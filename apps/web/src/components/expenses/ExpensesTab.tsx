@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Plus, Users, Trash2, PieChart as PieChartIcon, List } from 'lucide-react';
-import { useTrip, Trip } from '@itinerary/shared';
+import { useTrip, Trip, formatDate } from '@itinerary/shared';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { cn } from '@/lib/utils';
 import Modal from '../Modal';
@@ -118,7 +118,7 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({ trip }) => {
                                             <span className="text-xs px-2 py-0.5 bg-bg-secondary rounded-full text-text-secondary">{expense.category}</span>
                                         </div>
                                         <p className="text-sm text-text-secondary mt-1">
-                                            Paid by <span className="font-medium text-text-primary">{expense.payer}</span> • {expense.date}
+                                            Paid by <span className="font-medium text-text-primary">{expense.payer}</span> • {formatDate(expense.date)}
                                         </p>
                                         <p className="text-xs text-text-secondary mt-0.5">
                                             Split with: {expense.splitWith?.join(', ') || 'Everyone'}

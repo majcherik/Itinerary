@@ -1,5 +1,6 @@
 import { PDFDocument, rgb, StandardFonts, PDFCheckBox, PDFForm } from 'pdf-lib';
 import type { Trip } from '../../context/TripContext';
+import { formatDate } from '../utils';
 
 const PRIMARY_COLOR = rgb(0.88, 0.32, 0.37); // #e0525e
 const SECONDARY_COLOR = rgb(0.94, 0.94, 0.90); // #fff0e6
@@ -13,20 +14,6 @@ export async function generatePackingListPDF(trip: Trip): Promise<Uint8Array> {
 
     const addPage = () => {
         return pdfDoc.addPage([595, 842]); // A4 size
-    };
-
-    const formatDate = (dateStr: string | null) => {
-        if (!dateStr) return 'N/A';
-        try {
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-            });
-        } catch {
-            return dateStr;
-        }
     };
 
     // Create form for checkboxes

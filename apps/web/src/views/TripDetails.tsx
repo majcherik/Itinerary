@@ -12,7 +12,7 @@ import Modal from '../components/Modal';
 import ShareTripModal from '../components/ShareTripModal';
 import ExportMenu from '../components/ExportMenu';
 import { MapPin, Calendar, Home, Train, Plus, Trash2, Clock, Copy, Check, ArrowLeft, Share2, MoreVertical, Edit2, CheckCircle2, Circle, X, ExternalLink, Banknote } from 'lucide-react';
-import { useTrip, useCopyToClipboard, useDocumentTitle, useLocalStorage, Trip, ItineraryItem, AccommodationItem, TransportItem } from '@itinerary/shared';
+import { useTrip, useCopyToClipboard, useDocumentTitle, useLocalStorage, Trip, ItineraryItem, AccommodationItem, TransportItem, formatDate, formatDateTime } from '@itinerary/shared';
 import FadeIn from '../components/FadeIn';
 import { Skeleton } from '../components/ui/skeleton';
 import ItineraryTimeline from '../components/ItineraryTimeline';
@@ -262,7 +262,7 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                             >
                                 <Trash2 size={14} />
                             </button>
-                            <span className="text-xs font-bold text-accent-primary uppercase tracking-wider">{item.date}</span>
+                            <span className="text-xs font-bold text-accent-primary uppercase tracking-wider">{formatDate(item.date)}</span>
                             <div className="flex justify-between items-start">
                                 <h4 className="font-bold text-lg mt-1">{item.title}</h4>
                                 {item.cost && <span className="text-sm font-semibold text-text-primary bg-bg-secondary px-2 py-1 rounded">${item.cost}</span>}
@@ -320,7 +320,7 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                                 </div>
                                 <div className="flex items-center gap-1 text-text-secondary text-sm mt-1">
                                     <Calendar size={14} />
-                                    <span>{place.checkIn} - {place.checkOut}</span>
+                                    <span>{formatDate(place.checkIn)} - {formatDate(place.checkOut)}</span>
                                 </div>
                             </div>
                         </div>
@@ -366,12 +366,12 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                             <div className="flex justify-between items-center text-sm">
                                 <div>
                                     <span className="text-text-secondary text-xs block">Depart</span>
-                                    <span className="font-semibold">{ride.depart}</span>
+                                    <span className="font-semibold">{formatDateTime(ride.depart)}</span>
                                 </div>
                                 <div className="h-px bg-border-color flex-1 mx-4"></div>
                                 <div className="text-right">
                                     <span className="text-text-secondary text-xs block">Arrive</span>
-                                    <span className="font-semibold">{ride.arrive}</span>
+                                    <span className="font-semibold">{formatDateTime(ride.arrive)}</span>
                                 </div>
                             </div>
                         </div>

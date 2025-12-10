@@ -165,6 +165,11 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                 title: item.activity,
                 description: item.notes
             })),
+            accommodation: (trip.accommodation || []).map((accom: any) => ({
+                ...accom,
+                checkIn: accom.check_in,
+                checkOut: accom.check_out
+            })),
             documents: (trip.documents || []).map((doc: any) => ({
                 ...doc,
                 content: typeof doc.content === 'string' ? doc.content.split('\n') : doc.content

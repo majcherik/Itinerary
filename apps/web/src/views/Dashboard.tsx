@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 // Cast Link to any to avoid "cannot be used as a JSX component" error
 const LinkAny = Link as any;
-import { useTrip, useDocumentTitle, useCountdown, Trip } from '@itinerary/shared';
+import { useTrip, useDocumentTitle, useCountdown, Trip, formatDate } from '@itinerary/shared';
 import { Skeleton } from '../components/ui/skeleton';
 import WorldClock from '../components/WorldClock';
 
@@ -147,10 +147,7 @@ const Dashboard: React.FC = () => {
             ) : (
                 <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                     {trips.map((trip) => {
-                        const startDate = new Date(trip.start_date);
-                        const endDate = new Date(trip.end_date);
-                        const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-                        const dateString = `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}, ${endDate.getFullYear()}`;
+                        const dateString = `${formatDate(trip.start_date)} - ${formatDate(trip.end_date)}`;
 
                         return (
                             <LinkAny href={`/trip/${trip.id}`} key={trip.id} className="card p-0 overflow-hidden hover:shadow-lg transition-all group relative">

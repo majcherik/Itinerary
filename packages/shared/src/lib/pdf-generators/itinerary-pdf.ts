@@ -1,5 +1,6 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import type { Trip } from '../../context/TripContext';
+import { formatDate, formatDateTime } from '../utils';
 
 const PRIMARY_COLOR = rgb(0.88, 0.32, 0.37); // #e0525e
 const SECONDARY_COLOR = rgb(0.94, 0.94, 0.90); // #fff0e6
@@ -22,21 +23,6 @@ export async function generateItineraryPDF(
     // Helper function to add a new page
     const addPage = () => {
         return pdfDoc.addPage([595, 842]); // A4 size
-    };
-
-    // Helper function to format date
-    const formatDate = (dateStr: string | null) => {
-        if (!dateStr) return 'N/A';
-        try {
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-            });
-        } catch {
-            return dateStr;
-        }
     };
 
     // Helper function to format time
