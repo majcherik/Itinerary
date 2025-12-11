@@ -1,8 +1,0 @@
-{
-    "version": 2,
-    "buildCommand": "npm run build --filter=temp-app",
-    "outputDirectory": "apps/web/.next",
-    "installCommand": "npm install --legacy-peer-deps",
-    "framework": null,
-    "devCommand": null
-}
