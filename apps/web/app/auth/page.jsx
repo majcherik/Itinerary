@@ -20,12 +20,21 @@ const AuthContent = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const [error, setError] = useState(null);
     const { signIn, signUp, signInWithGoogle } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
 
     const from = searchParams.get('from') || '/';
+    const oauthError = searchParams.get('error');
+
+    // Show OAuth error if present
+    React.useEffect(() => {
+        if (oauthError === 'oauth_failed') {
+            setError('Google login failed. Please try again or use email/password.');
+        }
+    }, [oauthError]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -50,11 +59,15 @@ const AuthContent = () => {
     };
 
     const handleGoogleLogin = async () => {
+        setError(null);
+        setGoogleLoading(true);
         try {
             const { error } = await signInWithGoogle();
             if (error) throw error;
+            // If successful, user will be redirected by Supabase
         } catch (error) {
             setError(error.message);
+            setGoogleLoading(false);
         }
     };
 
@@ -110,8 +123,15 @@ const AuthContent = () => {
                             )}
                         </Button>
                     </form>
-                    <Button variant="outline" className="w-full" onClick={handleGoogleLogin} type="button">
-                        Login with Google
+                    <Button variant="outline" className="w-full" onClick={handleGoogleLogin} type="button" disabled={googleLoading}>
+                        {googleLoading ? (
+                            <div className="flex items-center gap-2">
+                                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-current"></div>
+                                Redirecting to Google...
+                            </div>
+                        ) : (
+                            'Login with Google'
+                        )}
                     </Button>
                 </CardContent>
                 <CardFooter className="flex justify-center">
