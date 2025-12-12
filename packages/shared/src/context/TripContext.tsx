@@ -49,7 +49,10 @@ export interface TicketItem {
     provider: string;
     refNumber: string;
     departs: string;
-    arrives: string;
+    arrives?: string;
+    returnDeparts?: string;
+    returnArrives?: string;
+    isRoundTrip?: boolean;
     notes?: string;
     file?: string;
 }
@@ -169,6 +172,13 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                 ...accom,
                 checkIn: accom.check_in,
                 checkOut: accom.check_out
+            })),
+            wallet: (trip.wallet || []).map((ticket: any) => ({
+                ...ticket,
+                refNumber: ticket.reference_number,
+                departs: ticket.departure_time,
+                arrives: ticket.arrival_time,
+                file: ticket.file_url
             })),
             documents: (trip.documents || []).map((doc: any) => ({
                 ...doc,
@@ -336,16 +346,28 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
 
     const addTicketMutation = useMutation({
         mutationFn: async ({ tripId, ticket }: { tripId: number | string, ticket: any }) => {
+            // Handle both old format (date/time separate) and new format (departs/arrives)
+            let departureTime = ticket.departs;
+            let arrivalTime = ticket.arrives;
+
+            // If date and time are provided separately, combine them
+            if (ticket.date && ticket.time) {
+                departureTime = `${ticket.date}T${ticket.time}:00`;
+            }
+            if (ticket.returnDate && ticket.returnTime) {
+                arrivalTime = `${ticket.returnDate}T${ticket.returnTime}:00`;
+            }
+
             const { data, error } = await supabase
                 .from('tickets')
                 .insert([{
                     trip_id: tripId,
                     type: ticket.type,
                     provider: ticket.provider,
-                    reference_number: ticket.refNumber,
-                    departure_time: ticket.departs,
-                    arrival_time: ticket.arrives,
-                    notes: ticket.notes,
+                    reference_number: ticket.number || ticket.refNumber,
+                    departure_time: departureTime,
+                    arrival_time: arrivalTime || null,
+                    notes: ticket.isRoundTrip ? `Round Trip${ticket.notes ? ': ' + ticket.notes : ''}` : ticket.notes,
                     file_url: ticket.file
                 }] as any)
                 .select()

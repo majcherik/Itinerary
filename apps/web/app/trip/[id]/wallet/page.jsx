@@ -19,16 +19,38 @@ const WalletContent = () => {
     const tickets = trip?.wallet || [];
 
     const [isModalOpen, setIsModalOpen] = React.useState(false);
-    const [newTicket, setNewTicket] = React.useState({ type: 'Flight', provider: '', number: '', date: '', time: '' });
+    const [newTicket, setNewTicket] = React.useState({
+        type: 'Flight',
+        provider: '',
+        number: '',
+        date: '',
+        time: '',
+        isRoundTrip: false,
+        returnDate: '',
+        returnTime: ''
+    });
 
     const [qrModalOpen, setQrModalOpen] = React.useState(false);
     const [selectedTicketForQr, setSelectedTicketForQr] = React.useState(null);
 
     const handleAddTicket = () => {
         if (!newTicket.provider || !newTicket.date) return;
+        if (newTicket.isRoundTrip && (!newTicket.returnDate || !newTicket.returnTime)) {
+            alert('Please provide return date and time for round-trip tickets');
+            return;
+        }
         addTicket(id, { ...newTicket, id: Date.now() });
         setIsModalOpen(false);
-        setNewTicket({ type: 'Flight', provider: '', number: '', date: '', time: '' });
+        setNewTicket({
+            type: 'Flight',
+            provider: '',
+            number: '',
+            date: '',
+            time: '',
+            isRoundTrip: false,
+            returnDate: '',
+            returnTime: ''
+        });
     };
 
     if (!trip) return <div>Trip not found</div>;
@@ -66,31 +88,74 @@ const WalletContent = () => {
                                         </button>
                                     </h3>
                                     <p className="text-text-secondary text-sm flex items-center gap-2">
-                                        {ticket.type === 'Flight' ? ticket.number : ticket.name}
-                                        <button
-                                            onClick={() => copy(ticket.type === 'Flight' ? ticket.number : ticket.name)}
-                                            className="text-text-secondary hover:text-accent-primary transition-colors"
-                                            title="Copy Details"
-                                        >
-                                            {copiedText === (ticket.type === 'Flight' ? ticket.number : ticket.name) ? <Check size={12} /> : <Copy size={12} />}
-                                        </button>
+                                        {ticket.refNumber || 'No reference number'}
+                                        {ticket.refNumber && (
+                                            <button
+                                                onClick={() => copy(ticket.refNumber)}
+                                                className="text-text-secondary hover:text-accent-primary transition-colors"
+                                                title="Copy Reference Number"
+                                            >
+                                                {copiedText === ticket.refNumber ? <Check size={12} /> : <Copy size={12} />}
+                                            </button>
+                                        )}
                                     </p>
                                 </div>
                             </div>
-                            <span className="px-3 py-1 bg-bg-primary rounded-full text-xs font-medium border border-border-color">
-                                {ticket.type}
-                            </span>
+                            <div className="flex gap-2">
+                                {ticket.arrives && (
+                                    <span className="px-3 py-1 bg-accent-primary/10 text-accent-primary rounded-full text-xs font-medium border border-accent-primary/20">
+                                        Round Trip
+                                    </span>
+                                )}
+                                <span className="px-3 py-1 bg-bg-primary rounded-full text-xs font-medium border border-border-color">
+                                    {ticket.type}
+                                </span>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 mb-6 relative z-10">
                             <div>
-                                <span className="text-text-secondary text-xs block mb-1">Date</span>
-                                <span className="font-semibold">{ticket.date}</span>
+                                <span className="text-text-secondary text-xs block mb-1">Departure Date</span>
+                                <span className="font-semibold">
+                                    {ticket.departs ? new Date(ticket.departs).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric'
+                                    }) : 'TBD'}
+                                </span>
                             </div>
                             <div>
-                                <span className="text-text-secondary text-xs block mb-1">Time</span>
-                                <span className="font-semibold">{ticket.time}</span>
+                                <span className="text-text-secondary text-xs block mb-1">Departure Time</span>
+                                <span className="font-semibold">
+                                    {ticket.departs ? new Date(ticket.departs).toLocaleTimeString('en-US', {
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    }) : 'TBD'}
+                                </span>
                             </div>
+                            {ticket.arrives && (
+                                <>
+                                    <div>
+                                        <span className="text-text-secondary text-xs block mb-1">Return Date</span>
+                                        <span className="font-semibold">
+                                            {new Date(ticket.arrives).toLocaleDateString('en-US', {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric'
+                                            })}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span className="text-text-secondary text-xs block mb-1">Return Time</span>
+                                        <span className="font-semibold">
+                                            {new Date(ticket.arrives).toLocaleTimeString('en-US', {
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}
+                                        </span>
+                                    </div>
+                                </>
+                            )}
                             {ticket.type === 'Flight' && (
                                 <>
                                     <div>
@@ -168,11 +233,21 @@ const WalletContent = () => {
                         <div className="text-center">
                             <h3 className="font-bold text-lg">{selectedTicketForQr.provider}</h3>
                             <p className="text-text-secondary text-sm">
-                                {selectedTicketForQr.type === 'Flight' ? selectedTicketForQr.number : selectedTicketForQr.name}
+                                {selectedTicketForQr.refNumber || selectedTicketForQr.type}
                             </p>
                             <p className="text-xs text-text-secondary mt-2 font-mono">
                                 ID: {selectedTicketForQr.id}
                             </p>
+                            {selectedTicketForQr.departs && (
+                                <p className="text-xs text-text-secondary mt-1">
+                                    {new Date(selectedTicketForQr.departs).toLocaleString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })}
+                                </p>
+                            )}
                         </div>
                     </div>
                 )}
@@ -213,9 +288,31 @@ const WalletContent = () => {
                             />
                         </div>
 
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium">Reference Number</label>
+                            <input
+                                type="text"
+                                className="input"
+                                placeholder="e.g., ABC123"
+                                value={newTicket.number}
+                                onChange={(e) => setNewTicket({ ...newTicket, number: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                id="roundTrip"
+                                checked={newTicket.isRoundTrip}
+                                onChange={(e) => setNewTicket({ ...newTicket, isRoundTrip: e.target.checked })}
+                                className="w-4 h-4"
+                            />
+                            <label htmlFor="roundTrip" className="text-sm font-medium">Round Trip</label>
+                        </div>
+
                         <div className="grid grid-cols-2 gap-4">
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm font-medium">Date</label>
+                                <label className="text-sm font-medium">Departure Date</label>
                                 <input
                                     type="date"
                                     className="input"
@@ -224,7 +321,7 @@ const WalletContent = () => {
                                 />
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm font-medium">Time</label>
+                                <label className="text-sm font-medium">Departure Time</label>
                                 <input
                                     type="time"
                                     className="input"
@@ -233,6 +330,29 @@ const WalletContent = () => {
                                 />
                             </div>
                         </div>
+
+                        {newTicket.isRoundTrip && (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-sm font-medium">Return Date</label>
+                                    <input
+                                        type="date"
+                                        className="input"
+                                        value={newTicket.returnDate}
+                                        onChange={(e) => setNewTicket({ ...newTicket, returnDate: e.target.value })}
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-sm font-medium">Return Time</label>
+                                    <input
+                                        type="time"
+                                        className="input"
+                                        value={newTicket.returnTime}
+                                        onChange={(e) => setNewTicket({ ...newTicket, returnTime: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                        )}
 
                         <div className="flex justify-end gap-2 mt-4">
                             <button onClick={() => setIsModalOpen(false)} className="btn btn-outline">Cancel</button>
