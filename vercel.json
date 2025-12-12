@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npx turbo run build --filter=temp-app --no-cache --force",
+  "buildCommand": "npx turbo run build --filter=temp-app --force",
   "outputDirectory": "apps/web/.next",
   "installCommand": "npm install --legacy-peer-deps",
   "framework": null
