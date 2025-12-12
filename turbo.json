@@ -14,8 +14,7 @@
             ],
             "outputs": [
                 ".next/**",
-                "!.next/cache/**",
-                "dist/**"
+                "!.next/cache/**"
             ]
         },
         "lint": {},
