@@ -70,13 +70,13 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onCurrencyChange,
                 options={currencies}
                 value={currentCurrency}
                 onChange={handleCurrencySelect}
-                buttonClassName="flex items-center gap-1 text-sm font-bold text-accent-primary hover:text-accent-primary/80 transition-colors bg-bg-secondary px-3 py-1.5 rounded-lg [&>span]:text-accent-primary"
+                buttonClassName="flex items-center gap-2 text-sm font-bold text-accent-primary hover:text-accent-primary/80 transition-colors bg-white border border-border-color px-4 py-2 rounded-lg shadow-sm min-w-[140px] [&>span]:text-accent-primary"
                 className="w-auto"
             />
             <button
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="p-1.5 hover:bg-bg-secondary rounded-lg transition-colors disabled:opacity-50"
+                className="p-1.5 hover:bg-white border border-transparent hover:border-border-color rounded-lg transition-all disabled:opacity-50"
                 title={`Last updated: ${getTimeSinceUpdate(lastUpdated)}`}
             >
                 <RefreshCw size={14} className={`text-text-secondary ${refreshing ? 'animate-spin' : ''}`} />
