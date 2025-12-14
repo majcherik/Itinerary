@@ -8,6 +8,7 @@ const LinkAny = Link as any;
 import Tabs from '../components/Tabs';
 import CurrencyConverter from '../components/CurrencyConverter';
 import CurrencyCalculator from '../components/CurrencyCalculator';
+import { convertFromUSD } from '../lib/currency-utils';
 import Modal from '../components/Modal';
 import ShareTripModal from '../components/ShareTripModal';
 import ExportMenu from '../components/ExportMenu';
@@ -87,7 +88,7 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
     }, [trip]);
 
     const [currency, setCurrency] = useState('USD');
-    const [exchangeRate, setExchangeRate] = useState(1);
+    const [exchangeRates, setExchangeRates] = useState<Record<string, number>>({ USD: 1 });
     const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useLocalStorage(`trip-details-tab-${id}`, 'itinerary');
@@ -455,12 +456,13 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
         { id: 'map', label: 'Map', content: <MapView /> },
     ];
 
-    const handleCurrencyChange = (newCurrency: string, rate: number) => {
+    const handleCurrencyChange = (newCurrency: string, rates: Record<string, number>) => {
         setCurrency(newCurrency);
-        setExchangeRate(rate);
+        setExchangeRates(rates);
     };
 
-    const convertedTotalCost = totalCost * exchangeRate;
+    // Always convert from USD base to ensure accuracy
+    const convertedTotalCost = convertFromUSD(totalCost, currency, exchangeRates);
 
     const startDate = trip ? new Date(trip.start_date) : null;
     const endDate = trip ? new Date(trip.end_date) : null;

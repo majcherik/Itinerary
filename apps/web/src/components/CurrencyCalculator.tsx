@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRightLeft, RefreshCw, X } from 'lucide-react';
+import { ArrowRightLeft, RefreshCw, X, AlertCircle } from 'lucide-react';
 import CustomDropdown from './CustomDropdown';
 import { useDebounceValue } from '@itinerary/shared';
+import { getCurrencyData } from '../lib/currency-utils';
 
 interface CurrencyCalculatorProps {
     onClose: () => void;
@@ -9,47 +10,62 @@ interface CurrencyCalculatorProps {
 
 const CurrencyCalculator: React.FC<CurrencyCalculatorProps> = ({ onClose }) => {
     const [currencies, setCurrencies] = useState<Record<string, string>>({});
+    const [rates, setRates] = useState<Record<string, number>>({});
     const [amount, setAmount] = useState<number | string>(1);
     const [fromCurrency, setFromCurrency] = useState('USD');
     const [toCurrency, setToCurrency] = useState('EUR');
     const [result, setResult] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [converting, setConverting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchCurrencies = async () => {
+        const loadData = async () => {
             try {
-                const res = await fetch('https://api.frankfurter.dev/v1/currencies');
-                const data = await res.json();
-                setCurrencies(data);
+                const data = await getCurrencyData();
+                setCurrencies(data.currencies);
+                setRates(data.rates);
                 setLoading(false);
-            } catch (error) {
-                console.error('Error fetching currencies:', error);
+            } catch (err) {
+                console.error('Error fetching currencies:', err);
+                setError('Failed to load currencies');
                 setLoading(false);
             }
         };
-        fetchCurrencies();
+        loadData();
     }, []);
 
     const debouncedAmount = useDebounceValue(amount, 500);
 
     useEffect(() => {
-        const convert = async () => {
-            if (!debouncedAmount || !fromCurrency || !toCurrency) return;
+        const convert = () => {
+            if (!debouncedAmount || !fromCurrency || !toCurrency || Object.keys(rates).length === 0) return;
+
             setConverting(true);
             try {
-                const res = await fetch(`https://api.frankfurter.dev/v1/latest?amount=${debouncedAmount}&from=${fromCurrency}&to=${toCurrency}`);
-                const data = await res.json();
-                setResult(data.rates[toCurrency]);
+                const numAmount = typeof debouncedAmount === 'string' ? parseFloat(debouncedAmount) : debouncedAmount;
+
+                // Convert from base currency (USD) to target
+                // First convert fromCurrency to USD, then USD to toCurrency
+                const fromRate = rates[fromCurrency] || 1;
+                const toRate = rates[toCurrency] || 1;
+
+                // If fromCurrency is USD, just multiply by toRate
+                // Otherwise, divide by fromRate to get USD amount, then multiply by toRate
+                const usdAmount = fromCurrency === 'USD' ? numAmount : numAmount / fromRate;
+                const converted = usdAmount * toRate;
+
+                setResult(converted);
             } catch (error) {
                 console.error('Error converting currency:', error);
+                setError('Conversion failed');
             } finally {
                 setConverting(false);
             }
         };
 
         convert();
-    }, [debouncedAmount, fromCurrency, toCurrency]);
+    }, [debouncedAmount, fromCurrency, toCurrency, rates]);
 
     const handleSwap = () => {
         setFromCurrency(toCurrency);
@@ -75,6 +91,13 @@ const CurrencyCalculator: React.FC<CurrencyCalculatorProps> = ({ onClose }) => {
                     </div>
                     Currency Calculator
                 </h3>
+
+                {error && (
+                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
+                        <AlertCircle size={16} />
+                        {error}
+                    </div>
+                )}
 
                 <div className="flex flex-col gap-6">
                     <div>
