@@ -1,11 +1,13 @@
 import React from 'react';
-import { CheckCircle, Circle, Plus, Trash2, Check, ChevronsUpDown } from 'lucide-react';
+import { Plus, Check, ChevronsUpDown, Circle } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useTrip } from '@itinerary/shared';
 
 import Modal from '../components/Modal';
 import { cn } from '../lib/utils';
 import { AnimatedCircularProgressBar } from '../components/ui/animated-circular-progress-bar';
+import AnimatedCheckbox from '../components/AnimatedCheckbox';
+import AnimatedDeleteButton from '../components/AnimatedDeleteButton';
 
 const PackingList: React.FC = () => {
     const { id } = useParams();
@@ -82,17 +84,14 @@ const PackingList: React.FC = () => {
                             <div className="flex flex-col gap-2">
                                 {categoryItems.map(item => (
                                     <div key={item.id} className="card flex items-center justify-between p-3">
-                                        <div className="flex items-center gap-3 cursor-pointer" onClick={() => toggleItem(item.id!)}>
-                                            {item.is_packed ?
-                                                <CheckCircle className="text-success" size={20} /> :
-                                                <Circle className="text-text-secondary" size={20} />
-                                            }
-                                            <span className={item.is_packed ? 'line-through text-text-secondary' : ''}>{item.item || item.category}</span>
-                                            {/* Note: item.item seems to be the text content based on context, or item.text. Checking TripContext: item: item.text */}
+                                        <div className="flex items-center gap-3 cursor-pointer flex-1" onClick={() => toggleItem(item.id!)}>
+                                            <AnimatedCheckbox
+                                                checked={item.is_packed || false}
+                                                onChange={() => toggleItem(item.id!)}
+                                            />
+                                            <span className={item.is_packed ? 'line-through text-text-secondary' : ''}>{item.item || item.text || item.name}</span>
                                         </div>
-                                        <button onClick={() => deleteItem(item.id!)} className="text-text-secondary hover:text-danger">
-                                            <Trash2 size={18} />
-                                        </button>
+                                        <AnimatedDeleteButton onClick={() => deleteItem(item.id!)} className="text-text-secondary" />
                                     </div>
                                 ))}
                             </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CheckCircle, Circle, Plus, Trash2, Check, ChevronsUpDown } from 'lucide-react';
+import { Circle, Plus, Check, ChevronsUpDown } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useTrip } from '@itinerary/shared';
 
@@ -26,6 +26,8 @@ import ProtectedRoute from '../../../../src/components/ProtectedRoute';
 import Layout from '../../../../src/components/Layout';
 import MenuDockResponsive from '../../../../src/components/MenuDockResponsive';
 import Footer from '../../../../src/components/Footer';
+import AnimatedCheckbox from '../../../../src/components/AnimatedCheckbox';
+import AnimatedDeleteButton from '../../../../src/components/AnimatedDeleteButton';
 
 import { useOnClickOutside } from '@itinerary/shared';
 
@@ -111,16 +113,14 @@ const PackingListContent = () => {
                             <div className="flex flex-col gap-2">
                                 {categoryItems.map(item => (
                                     <div key={item.id} className="card flex items-center justify-between p-3">
-                                        <div className="flex items-center gap-3 cursor-pointer" onClick={() => toggleItem(item.id)}>
-                                            {item.is_packed ?
-                                                <CheckCircle className="text-success" size={20} /> :
-                                                <Circle className="text-text-secondary" size={20} />
-                                            }
+                                        <div className="flex items-center gap-3 cursor-pointer flex-1" onClick={() => toggleItem(item.id)}>
+                                            <AnimatedCheckbox
+                                                checked={item.is_packed || false}
+                                                onChange={() => toggleItem(item.id)}
+                                            />
                                             <span className={item.is_packed ? 'line-through text-text-secondary' : ''}>{item.item || item.text || item.name}</span>
                                         </div>
-                                        <button onClick={() => deleteItem(item.id)} className="text-text-secondary hover:text-danger">
-                                            <Trash2 size={18} />
-                                        </button>
+                                        <AnimatedDeleteButton onClick={() => deleteItem(item.id)} className="text-text-secondary" />
                                     </div>
                                 ))}
                             </div>
@@ -214,26 +214,29 @@ const PackingListContent = () => {
                                                             {newItem.category === category && <Check size={14} className="text-accent-primary" />}
                                                         </div>
                                                         {!isDefault && (
-                                                            <button
-                                                                className="text-text-secondary hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                                                            <div
+                                                                className="opacity-0 group-hover:opacity-100 transition-opacity"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    if (window.confirm(`Delete category "${category}"? Items will be moved to "Misc".`)) {
-                                                                        // Find all items with this category and update them to 'Misc'
-                                                                        const itemsToUpdate = items.filter(i => i.category === category);
-                                                                        itemsToUpdate.forEach(item => {
-                                                                            updatePackingItem(id, item.id, { category: 'Misc' });
-                                                                        });
-                                                                        // If currently selected, reset to Misc
-                                                                        if (newItem.category === category) {
-                                                                            setNewItem({ ...newItem, category: 'Misc' });
-                                                                        }
-                                                                    }
                                                                 }}
-                                                                title="Delete category"
                                                             >
-                                                                <Trash2 size={14} />
-                                                            </button>
+                                                                <AnimatedDeleteButton
+                                                                    onClick={() => {
+                                                                        if (window.confirm(`Delete category "${category}"? Items will be moved to "Misc".`)) {
+                                                                            // Find all items with this category and update them to 'Misc'
+                                                                            const itemsToUpdate = items.filter(i => i.category === category);
+                                                                            itemsToUpdate.forEach(item => {
+                                                                                updatePackingItem(id, item.id, { category: 'Misc' });
+                                                                            });
+                                                                            // If currently selected, reset to Misc
+                                                                            if (newItem.category === category) {
+                                                                                setNewItem({ ...newItem, category: 'Misc' });
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                    className="text-text-secondary"
+                                                                />
+                                                            </div>
                                                         )}
                                                     </div>
                                                 );

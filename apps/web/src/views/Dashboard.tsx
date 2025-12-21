@@ -1,6 +1,6 @@
 import React from 'react';
 import { toast } from 'sonner';
-import { Calendar, Plus, Trash2, Edit2, X, Clock } from 'lucide-react';
+import { Calendar, Plus, Edit2, X, Clock } from 'lucide-react';
 import Link from 'next/link';
 
 // Cast Link to any to avoid "cannot be used as a JSX component" error
@@ -8,6 +8,7 @@ const LinkAny = Link as any;
 import { useTrip, useDocumentTitle, useCountdown, Trip, formatDate } from '@itinerary/shared';
 import { Skeleton } from '../components/ui/skeleton';
 import WorldClock from '../components/WorldClock';
+import AnimatedDeleteButton from '../components/AnimatedDeleteButton';
 
 const Dashboard: React.FC = () => {
     useDocumentTitle('My Trips | TripPlanner');
@@ -160,13 +161,11 @@ const Dashboard: React.FC = () => {
                                     >
                                         <Edit2 size={18} />
                                     </button>
-                                    <button
-                                        onClick={(e) => handleDeleteTrip(trip.id, e)}
-                                        className="p-2 bg-white/90 rounded-full text-danger hover:bg-danger hover:text-white shadow-md transition-colors"
-                                        title="Delete Trip"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
+                                    <div className="p-2 bg-white/90 rounded-full shadow-md">
+                                        <AnimatedDeleteButton
+                                            onClick={() => handleDeleteTrip(trip.id, null as any)}
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="h-32 overflow-hidden relative">

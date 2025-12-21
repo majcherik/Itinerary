@@ -12,12 +12,13 @@ import { convertFromUSD } from '../lib/currency-utils';
 import Modal from '../components/Modal';
 import ShareTripModal from '../components/ShareTripModal';
 import ExportMenu from '../components/ExportMenu';
-import { MapPin, Calendar, Home, Train, Plus, Trash2, Clock, Copy, Check, ArrowLeft, Share2, MoreVertical, Edit2, CheckCircle2, Circle, X, ExternalLink, Banknote } from 'lucide-react';
+import { MapPin, Calendar, Home, Train, Plus, Clock, Copy, Check, ArrowLeft, Share2, MoreVertical, Edit2, CheckCircle2, Circle, X, ExternalLink, Banknote } from 'lucide-react';
 import { useTrip, useCopyToClipboard, useDocumentTitle, useLocalStorage, Trip, ItineraryItem, AccommodationItem, TransportItem, formatDate, formatDateTime } from '@itinerary/shared';
 import FadeIn from '../components/FadeIn';
 import { Skeleton } from '../components/ui/skeleton';
 import ItineraryTimeline from '../components/ItineraryTimeline';
 import ExpensesTab from '../components/expenses/ExpensesTab';
+import AnimatedDeleteButton from '../components/AnimatedDeleteButton';
 
 interface TripDetailsProps {
     tripId?: string | number;
@@ -256,13 +257,11 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                             {item.day}
                         </div>
                         <div className="card group relative pr-10">
-                            <button
-                                onClick={() => deleteItineraryItem(id as string, item.id as string)}
-                                className="absolute top-3 right-3 p-1.5 rounded-full bg-bg-primary text-text-secondary hover:text-danger hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
-                                title="Delete item"
-                            >
-                                <Trash2 size={14} />
-                            </button>
+                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all">
+                                <AnimatedDeleteButton
+                                    onClick={() => deleteItineraryItem(id as string, item.id as string)}
+                                />
+                            </div>
                             <span className="text-xs font-bold text-accent-primary uppercase tracking-wider">{formatDate(item.date)}</span>
                             <div className="flex justify-between items-start">
                                 <h4 className="font-bold text-lg mt-1">{item.title}</h4>
@@ -289,13 +288,11 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                 {(trip.accommodation || []).map((place, index) => (
                     <FadeIn key={place.id || place.name} delay={index * 100}>
                         <div className="card flex gap-4 group relative pr-10">
-                            <button
-                                onClick={() => deleteAccommodation(id as string, place.id as string)}
-                                className="absolute top-3 right-3 p-1.5 rounded-full bg-bg-primary text-text-secondary hover:text-danger hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
-                                title="Delete stay"
-                            >
-                                <Trash2 size={14} />
-                            </button>
+                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all">
+                                <AnimatedDeleteButton
+                                    onClick={() => deleteAccommodation(id as string, place.id as string)}
+                                />
+                            </div>
                             <div className="p-3 bg-bg-primary rounded-lg h-fit">
                                 <Home size={24} className="text-accent-secondary" />
                             </div>
@@ -344,13 +341,11 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                 {(trip.transport || []).map((ride, index) => (
                     <FadeIn key={ride.id || ride.number} delay={index * 100}>
                         <div className="card group relative pr-10">
-                            <button
-                                onClick={() => deleteTransport(id as string, ride.id as string)}
-                                className="absolute top-3 right-3 p-1.5 rounded-full bg-bg-primary text-text-secondary hover:text-danger hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
-                                title="Delete transport"
-                            >
-                                <Trash2 size={14} />
-                            </button>
+                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all">
+                                <AnimatedDeleteButton
+                                    onClick={() => deleteTransport(id as string, ride.id as string)}
+                                />
+                            </div>
                             <div className="flex justify-between items-start mb-4">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-bg-primary rounded-lg">
@@ -576,9 +571,9 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                                         />
                                     </div>
                                     {itineraryForm.items.length > 1 && (
-                                        <button onClick={() => handleRemoveItemRow(index)} className="p-2 text-text-secondary hover:text-danger mt-1">
-                                            <Trash2 size={18} />
-                                        </button>
+                                        <div className="p-2 mt-1">
+                                            <AnimatedDeleteButton onClick={() => handleRemoveItemRow(index)} />
+                                        </div>
                                     )}
                                 </div>
                             ))}

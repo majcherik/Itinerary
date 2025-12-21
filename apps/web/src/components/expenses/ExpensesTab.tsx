@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Users, Trash2, PieChart as PieChartIcon, List } from 'lucide-react';
+import { Plus, Users, PieChart as PieChartIcon, List } from 'lucide-react';
 import { useTrip, Trip, formatDate } from '@itinerary/shared';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { cn } from '@/lib/utils';
@@ -7,6 +7,7 @@ import Modal from '../Modal';
 import AddExpenseModal from './AddExpenseModal';
 import TripMembers from './TripMembers';
 import SettlementView from './SettlementView';
+import AnimatedDeleteButton from '../AnimatedDeleteButton';
 
 interface ExpensesTabProps {
     trip: Trip;
@@ -126,12 +127,11 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({ trip }) => {
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <span className="font-bold text-lg">${Number(expense.amount).toFixed(2)}</span>
-                                        <button
-                                            onClick={() => handleDelete(expense.id!)}
-                                            className="text-text-secondary hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
+                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <AnimatedDeleteButton
+                                                onClick={() => handleDelete(expense.id!)}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             ))

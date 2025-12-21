@@ -13,6 +13,7 @@ import {
 } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import SocialMediaLinks from '../components/SocialMediaLinks';
 
 const Auth: React.FC = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -59,7 +60,7 @@ const Auth: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-bg-primary p-4">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-bg-primary p-4">
             <Card className="w-full max-w-md">
                 <CardHeader>
                     <CardTitle>{isLogin ? 'Login to your account' : 'Create an account'}</CardTitle>
@@ -126,6 +127,7 @@ const Auth: React.FC = () => {
                     </p>
                 </CardFooter>
             </Card>
+            <SocialMediaLinks />
         </div>
     );
 };

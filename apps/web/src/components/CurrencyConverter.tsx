@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { RefreshCw, AlertCircle } from 'lucide-react';
-import CustomDropdown from './CustomDropdown';
+import React, { useState, useEffect, useRef } from 'react';
+import { RefreshCw, AlertCircle, ChevronDown } from 'lucide-react';
+import Modal from './Modal';
 import { getCurrencyData, getTimeSinceUpdate } from '../lib/currency-utils';
 
 interface CurrencyConverterProps {
@@ -15,6 +15,8 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onCurrencyChange,
     const [error, setError] = useState<string | null>(null);
     const [refreshing, setRefreshing] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<number>(0);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const selectedCurrencyRef = useRef<HTMLButtonElement>(null);
 
     const loadCurrencyData = async (forceRefresh = false) => {
         try {
@@ -40,8 +42,17 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onCurrencyChange,
         loadCurrencyData();
     }, []);
 
+    useEffect(() => {
+        if (isModalOpen && selectedCurrencyRef.current) {
+            setTimeout(() => {
+                selectedCurrencyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    }, [isModalOpen]);
+
     const handleCurrencySelect = (currency: string) => {
         onCurrencyChange(currency, rates);
+        setIsModalOpen(false);
     };
 
     const handleRefresh = async (e: React.MouseEvent) => {
@@ -65,23 +76,56 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onCurrencyChange,
     }
 
     return (
-        <div className="flex items-center gap-2">
-            <CustomDropdown
-                options={currencies}
-                value={currentCurrency}
-                onChange={handleCurrencySelect}
-                buttonClassName="flex items-center gap-2 text-sm font-bold text-accent-primary hover:text-accent-primary/80 transition-colors bg-white border border-border-color px-4 py-2 rounded-lg shadow-sm min-w-[140px] [&>span]:text-accent-primary"
-                className="w-auto"
-            />
-            <button
-                onClick={handleRefresh}
-                disabled={refreshing}
-                className="p-1.5 hover:bg-white border border-transparent hover:border-border-color rounded-lg transition-all disabled:opacity-50"
-                title={`Last updated: ${getTimeSinceUpdate(lastUpdated)}`}
+        <>
+            <div className="flex items-center gap-2">
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="flex items-center gap-2 text-sm font-bold text-accent-primary hover:text-accent-primary/80 transition-colors bg-white border border-border-color px-4 py-2 rounded-lg shadow-sm min-w-[140px]"
+                >
+                    <span>{currentCurrency} - {currencies[currentCurrency]}</span>
+                    <ChevronDown size={16} />
+                </button>
+                <button
+                    onClick={handleRefresh}
+                    disabled={refreshing}
+                    className="p-1.5 hover:bg-white border border-transparent hover:border-border-color rounded-lg transition-all disabled:opacity-50"
+                    title={`Last updated: ${getTimeSinceUpdate(lastUpdated)}`}
+                >
+                    <RefreshCw size={14} className={`text-text-secondary ${refreshing ? 'animate-spin' : ''}`} />
+                </button>
+            </div>
+
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title="Select Currency"
             >
-                <RefreshCw size={14} className={`text-text-secondary ${refreshing ? 'animate-spin' : ''}`} />
-            </button>
-        </div>
+                <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto">
+                    {Object.entries(currencies).map(([code, name]) => (
+                        <button
+                            key={code}
+                            ref={currentCurrency === code ? selectedCurrencyRef : null}
+                            onClick={() => handleCurrencySelect(code)}
+                            className={`flex items-center justify-between p-3 rounded-lg transition-colors text-left ${
+                                currentCurrency === code
+                                    ? 'bg-accent-primary text-white'
+                                    : 'hover:bg-bg-secondary'
+                            }`}
+                        >
+                            <div className="flex flex-col">
+                                <span className="font-bold">{code}</span>
+                                <span className={`text-sm ${currentCurrency === code ? 'text-white/80' : 'text-text-secondary'}`}>
+                                    {name}
+                                </span>
+                            </div>
+                            {currentCurrency === code && (
+                                <span className="text-lg">✓</span>
+                            )}
+                        </button>
+                    ))}
+                </div>
+            </Modal>
+        </>
     );
 };
 

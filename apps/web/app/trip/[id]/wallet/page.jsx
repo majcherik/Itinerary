@@ -1,13 +1,14 @@
 'use client';
 
 import React from 'react';
-import { Plane, Ticket, QrCode, Download, Plus, Copy, Check, Trash2 } from 'lucide-react';
+import { Plane, Ticket, QrCode, Download, Plus, Copy, Check } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useTrip, useCopyToClipboard } from '@itinerary/shared';
 import QRCode from 'react-qr-code';
 import Modal from '../../../../src/components/Modal';
 import ProtectedRoute from '../../../../src/components/ProtectedRoute';
 import Layout from '../../../../src/components/Layout';
+import AnimatedDeleteButton from '../../../../src/components/AnimatedDeleteButton';
 import MenuDockResponsive from '../../../../src/components/MenuDockResponsive';
 import Footer from '../../../../src/components/Footer';
 
@@ -187,18 +188,17 @@ const WalletContent = () => {
                                     <Download size={16} />
                                     <span className="text-sm font-medium">Download PDF</span>
                                 </div>
-                                <button
-                                    onClick={() => {
-                                        if (window.confirm('Are you sure you want to delete this ticket?')) {
-                                            deleteTicket(id, ticket.id);
-                                        }
-                                    }}
-                                    className="flex items-center gap-2 text-text-secondary hover:text-danger transition-colors"
-                                    title="Delete Ticket"
-                                >
-                                    <Trash2 size={16} />
-                                    <span className="text-sm font-medium">Delete</span>
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <AnimatedDeleteButton
+                                        onClick={() => {
+                                            if (window.confirm('Are you sure you want to delete this ticket?')) {
+                                                deleteTicket(id, ticket.id);
+                                            }
+                                        }}
+                                        className="text-text-secondary"
+                                    />
+                                    <span className="text-sm font-medium text-text-secondary">Delete</span>
+                                </div>
                             </div>
                             <button
                                 onClick={() => {
