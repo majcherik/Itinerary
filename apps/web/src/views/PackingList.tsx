@@ -89,7 +89,7 @@ const PackingList: React.FC = () => {
                                                 checked={item.is_packed || false}
                                                 onChange={() => toggleItem(item.id!)}
                                             />
-                                            <span className={item.is_packed ? 'line-through text-text-secondary' : ''}>{item.item || item.text || item.name}</span>
+                                            <span className={item.is_packed ? 'line-through text-text-secondary' : ''}>{item.item}</span>
                                         </div>
                                         <AnimatedDeleteButton onClick={() => deleteItem(item.id!)} className="text-text-secondary" />
                                     </div>
