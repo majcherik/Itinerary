@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, Suspense, useRef } from 'react';
 import { useAuth } from '@itinerary/shared';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 import SocialMediaLinks from '../../src/components/SocialMediaLinks';
 
 // Validation schemas
@@ -32,6 +33,8 @@ const AuthContent = () => {
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [captchaToken, setCaptchaToken] = useState(null);
+    const captchaRef = useRef(null);
     const { signIn, signUp, signInWithGoogle } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -68,9 +71,18 @@ const AuthContent = () => {
     // Reset form when switching between login/signup
     React.useEffect(() => {
         reset();
+        setCaptchaToken(null);
+        if (captchaRef.current) {
+            captchaRef.current.resetCaptcha();
+        }
     }, [isLogin, reset]);
 
     const handleSubmit = async (data) => {
+        if (!captchaToken) {
+            setError('Please complete the captcha verification');
+            return;
+        }
+
         setError(null);
         setLoading(true);
 
@@ -83,16 +95,21 @@ const AuthContent = () => {
                     localStorage.removeItem('rememberMe');
                 }
 
-                const { error } = await signIn(data.email, data.password);
+                const { error } = await signIn(data.email, data.password, { captchaToken });
                 if (error) throw error;
                 router.push(from);
             } else {
-                const { error } = await signUp(data.email, data.password);
+                const { error } = await signUp(data.email, data.password, { captchaToken });
                 if (error) throw error;
                 alert('Check your email for the confirmation link!');
             }
         } catch (error) {
             setError(error.message);
+            // Reset captcha on error
+            setCaptchaToken(null);
+            if (captchaRef.current) {
+                captchaRef.current.resetCaptcha();
+            }
         } finally {
             setLoading(false);
         }
@@ -203,9 +220,18 @@ const AuthContent = () => {
                         </div>
                     )}
 
+                    <div className="flex justify-center">
+                        <HCaptcha
+                            sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY}
+                            onVerify={(token) => setCaptchaToken(token)}
+                            onExpire={() => setCaptchaToken(null)}
+                            ref={captchaRef}
+                        />
+                    </div>
+
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || !captchaToken}
                         style={{ backgroundColor: 'var(--accent-primary, #6366f1)' }}
                         className="w-full px-4 py-2 text-white font-medium hover:opacity-90 active:opacity-100 rounded-lg duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
