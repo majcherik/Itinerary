@@ -3,12 +3,28 @@
 import React, { useState, Suspense } from 'react';
 import { useAuth } from '@itinerary/shared';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import SocialMediaLinks from '../../src/components/SocialMediaLinks';
+
+// Validation schemas
+const loginSchema = z.object({
+    email: z.string().email('Please enter a valid email address'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+const signUpSchema = z.object({
+    email: z.string().email('Please enter a valid email address'),
+    password: z.string()
+        .min(8, 'Password must be at least 8 characters')
+        .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+        .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+        .regex(/[0-9]/, 'Password must contain at least one number'),
+});
 
 const AuthContent = () => {
     const [isLogin, setIsLogin] = useState(true);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
@@ -19,6 +35,17 @@ const AuthContent = () => {
 
     const from = searchParams.get('from') || '/';
     const oauthError = searchParams.get('error');
+
+    // Form validation with react-hook-form
+    const {
+        register,
+        handleSubmit: handleFormSubmit,
+        formState: { errors, isValid },
+        reset
+    } = useForm({
+        resolver: zodResolver(isLogin ? loginSchema : signUpSchema),
+        mode: 'onBlur',
+    });
 
     // Show OAuth error if present
     React.useEffect(() => {
@@ -35,8 +62,12 @@ const AuthContent = () => {
         }
     }, []);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    // Reset form when switching between login/signup
+    React.useEffect(() => {
+        reset();
+    }, [isLogin, reset]);
+
+    const handleSubmit = async (data) => {
         setError(null);
         setLoading(true);
 
@@ -49,11 +80,11 @@ const AuthContent = () => {
                     localStorage.removeItem('rememberMe');
                 }
 
-                const { error } = await signIn(email, password);
+                const { error } = await signIn(data.email, data.password);
                 if (error) throw error;
                 router.push(from);
             } else {
-                const { error } = await signUp(email, password);
+                const { error } = await signUp(data.email, data.password);
                 if (error) throw error;
                 alert('Check your email for the confirmation link!');
             }
@@ -108,26 +139,28 @@ const AuthContent = () => {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+                <form onSubmit={handleFormSubmit(handleSubmit)} className="mt-8 space-y-5">
                     <div>
                         <label className="font-medium text-text-primary">Email</label>
                         <input
                             type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full mt-2 px-3 py-2 text-text-primary bg-transparent outline-none border border-border-color focus:border-accent-primary shadow-sm rounded-lg transition-colors"
+                            {...register('email')}
+                            className={`w-full mt-2 px-3 py-2 text-text-primary bg-transparent outline-none border ${errors.email ? 'border-red-500 focus:border-red-500' : 'border-border-color focus:border-accent-primary'} shadow-sm rounded-lg transition-colors`}
                         />
+                        {errors.email && (
+                            <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+                        )}
                     </div>
                     <div>
                         <label className="font-medium text-text-primary">Password</label>
                         <input
                             type="password"
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full mt-2 px-3 py-2 text-text-primary bg-transparent outline-none border border-border-color focus:border-accent-primary shadow-sm rounded-lg transition-colors"
+                            {...register('password')}
+                            className={`w-full mt-2 px-3 py-2 text-text-primary bg-transparent outline-none border ${errors.password ? 'border-red-500 focus:border-red-500' : 'border-border-color focus:border-accent-primary'} shadow-sm rounded-lg transition-colors`}
                         />
+                        {errors.password && (
+                            <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
+                        )}
                     </div>
 
                     {isLogin && (
