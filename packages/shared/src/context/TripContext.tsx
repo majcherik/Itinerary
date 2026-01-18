@@ -157,17 +157,17 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
     const queryClient = useQueryClient();
 
     const fetchTrips = async () => {
-        const { data, error } = await supabase
+        const { data, error} = await supabase
             .from('trips')
             .select(`
-                *,
-                itinerary:itinerary_items(*),
-                packingList:packing_items(*),
-                documents(*),
-                wallet:tickets(*),
-                accommodation(*),
-                transport(*),
-                expenses(*)
+                id, user_id, title, start_date, end_date, city, hero_image, members, latitude, longitude, created_at,
+                itinerary:itinerary_items(id, day, date, activity, notes, cost, time, latitude, longitude, location_name),
+                packingList:packing_items(id, item, category, is_packed),
+                documents(id, title, content, type, date, isWarning),
+                wallet:tickets(id, type, provider, refNumber, departs, arrives, returnDeparts, returnArrives, isRoundTrip, notes, file),
+                accommodation(id, name, address, checkIn, checkOut, type, notes, cost, latitude, longitude),
+                transport(id, type, number, from, to, depart, arrive, cost, departure_latitude, departure_longitude, arrival_latitude, arrival_longitude, departure_location, arrival_location, provider),
+                expenses(id, payer, amount, description, date, category, splitWith)
             `)
             .order('created_at', { ascending: false });
 
