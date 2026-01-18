@@ -149,9 +149,10 @@ export function GlassProfileSettingsCard() {
         if (preferences) {
             setCurrency(preferences.default_currency || "USD");
             if (preferences.notification_settings) {
-                setEmailTripReminders(preferences.notification_settings.email_trip_reminders ?? true);
-                setEmailMarketing(preferences.notification_settings.email_marketing ?? false);
-                setEmailExpenseUpdates(preferences.notification_settings.email_expense_updates ?? true);
+                const settings = preferences.notification_settings as any;
+                setEmailTripReminders(settings.email_trip_reminders ?? true);
+                setEmailMarketing(settings.email_marketing ?? false);
+                setEmailExpenseUpdates(settings.email_expense_updates ?? true);
             }
         }
         toast.info("Changes reset");
