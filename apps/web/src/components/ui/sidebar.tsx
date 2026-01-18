@@ -154,7 +154,15 @@ const SidebarProvider = React.forwardRef<HTMLDivElement, SidebarProviderProps>((
 })
 SidebarProvider.displayName = "SidebarProvider"
 
-const Sidebar = React.forwardRef((
+type SidebarProps = {
+  side?: "left" | "right"
+  variant?: "sidebar" | "floating" | "inset"
+  collapsible?: "offcanvas" | "icon" | "none"
+  className?: string
+  children?: React.ReactNode
+} & React.ComponentPropsWithoutRef<'div'>
+
+const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>((
   {
     side = "left",
     variant = "sidebar",
@@ -243,7 +251,7 @@ const Sidebar = React.forwardRef((
       </div>
     </div>
   );
-})
+}) as React.ForwardRefExoticComponent<SidebarProps & React.RefAttributes<HTMLDivElement>>
 Sidebar.displayName = "Sidebar"
 
 const SidebarTrigger = React.forwardRef(({ className, onClick, ...props }, ref) => {
