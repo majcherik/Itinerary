@@ -778,7 +778,7 @@ function MapPopup({
 }
 
 function MapRoute({
-  id: propId,
+  id: propId = undefined,
   coordinates,
   color = "#4285F4",
   width = 3,
