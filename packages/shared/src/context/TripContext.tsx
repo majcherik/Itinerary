@@ -47,6 +47,10 @@ export interface TransportItem {
     depart: string;
     arrive: string;
     cost?: number | string;
+    departure_latitude?: number | null;
+    departure_longitude?: number | null;
+    arrival_latitude?: number | null;
+    arrival_longitude?: number | null;
 }
 
 export interface TicketItem {
