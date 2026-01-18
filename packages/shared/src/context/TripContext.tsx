@@ -19,6 +19,8 @@ export interface ItineraryItem {
     description?: string;
     cost?: number | string;
     time?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
 }
 
 export interface AccommodationItem {
