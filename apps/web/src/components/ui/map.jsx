@@ -783,10 +783,10 @@ function MapRoute({
   color = "#4285F4",
   width = 3,
   opacity = 0.8,
-  dashArray,
-  onClick,
-  onMouseEnter,
-  onMouseLeave,
+  dashArray = undefined,
+  onClick = undefined,
+  onMouseEnter = undefined,
+  onMouseLeave = undefined,
   interactive = true
 }) {
   const { map, isLoaded } = useMap();
