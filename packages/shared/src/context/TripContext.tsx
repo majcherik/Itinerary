@@ -30,6 +30,8 @@ export interface AccommodationItem {
     type: string;
     notes?: string;
     cost?: number | string;
+    latitude?: number | null;
+    longitude?: number | null;
 }
 
 export interface TransportItem {
