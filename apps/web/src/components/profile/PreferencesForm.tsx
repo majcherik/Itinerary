@@ -50,11 +50,11 @@ export function PreferencesForm() {
     resolver: zodResolver(updatePreferencesSchema),
     values: {
       default_currency: (preferences?.default_currency ?? 'USD') as UpdatePreferencesInput['default_currency'],
-      notification_settings: preferences?.notification_settings ?? {
+      notification_settings: (preferences?.notification_settings ?? {
         email_trip_reminders: true,
         email_expense_updates: true,
         email_marketing: false,
-      },
+      }) as UpdatePreferencesInput['notification_settings'],
     },
   });
 
