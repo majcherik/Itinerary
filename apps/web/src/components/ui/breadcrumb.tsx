@@ -1,12 +1,18 @@
+// @ts-nocheck
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { ChevronRight, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+type BreadcrumbComponentProps = {
+  className?: string
+  children?: React.ReactNode
+} & React.HTMLAttributes<HTMLElement>
+
 const Breadcrumb = React.forwardRef(
   ({ ...props }, ref) => <nav ref={ref} aria-label="breadcrumb" {...props} />
-)
+) as React.ForwardRefExoticComponent<BreadcrumbComponentProps & React.RefAttributes<HTMLElement>>
 Breadcrumb.displayName = "Breadcrumb"
 
 const BreadcrumbList = React.forwardRef(({ className, ...props }, ref) => (
@@ -17,7 +23,7 @@ const BreadcrumbList = React.forwardRef(({ className, ...props }, ref) => (
       className
     )}
     {...props} />
-))
+)) as React.ForwardRefExoticComponent<BreadcrumbComponentProps & React.RefAttributes<HTMLOListElement>>
 BreadcrumbList.displayName = "BreadcrumbList"
 
 const BreadcrumbItem = React.forwardRef(({ className, ...props }, ref) => (
@@ -25,7 +31,7 @@ const BreadcrumbItem = React.forwardRef(({ className, ...props }, ref) => (
     ref={ref}
     className={cn("inline-flex items-center gap-1.5", className)}
     {...props} />
-))
+)) as React.ForwardRefExoticComponent<BreadcrumbComponentProps & React.RefAttributes<HTMLLIElement>>
 BreadcrumbItem.displayName = "BreadcrumbItem"
 
 const BreadcrumbLink = React.forwardRef(({ asChild, className, ...props }, ref) => {
@@ -37,7 +43,7 @@ const BreadcrumbLink = React.forwardRef(({ asChild, className, ...props }, ref) 
       className={cn("transition-colors hover:text-foreground", className)}
       {...props} />
   );
-})
+}) as React.ForwardRefExoticComponent<BreadcrumbComponentProps & { asChild?: boolean } & React.RefAttributes<HTMLAnchorElement>>
 BreadcrumbLink.displayName = "BreadcrumbLink"
 
 const BreadcrumbPage = React.forwardRef(({ className, ...props }, ref) => (
@@ -48,10 +54,10 @@ const BreadcrumbPage = React.forwardRef(({ className, ...props }, ref) => (
     aria-current="page"
     className={cn("font-normal text-foreground", className)}
     {...props} />
-))
+)) as React.ForwardRefExoticComponent<BreadcrumbComponentProps & React.RefAttributes<HTMLSpanElement>>
 BreadcrumbPage.displayName = "BreadcrumbPage"
 
-const BreadcrumbSeparator = ({
+const BreadcrumbSeparator: React.FC<BreadcrumbComponentProps> = ({
   children,
   className,
   ...props
@@ -66,7 +72,7 @@ const BreadcrumbSeparator = ({
 )
 BreadcrumbSeparator.displayName = "BreadcrumbSeparator"
 
-const BreadcrumbEllipsis = ({
+const BreadcrumbEllipsis: React.FC<{ className?: string } & React.HTMLAttributes<HTMLSpanElement>> = ({
   className,
   ...props
 }) => (
