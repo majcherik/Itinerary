@@ -228,6 +228,23 @@ function useMarkerContext() {
   return context;
 }
 
+/**
+ * @typedef {Object} MapMarkerProps
+ * @property {number} longitude
+ * @property {number} latitude
+ * @property {import('react').ReactNode} [children]
+ * @property {Function} [onClick]
+ * @property {Function} [onMouseEnter]
+ * @property {Function} [onMouseLeave]
+ * @property {Function} [onDragStart]
+ * @property {Function} [onDrag]
+ * @property {Function} [onDragEnd]
+ * @property {boolean} [draggable]
+ */
+
+/**
+ * @param {MapMarkerProps & Object} props
+ */
 function MapMarker({
   longitude,
   latitude,
