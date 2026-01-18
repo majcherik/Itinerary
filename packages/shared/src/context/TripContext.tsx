@@ -51,6 +51,9 @@ export interface TransportItem {
     departure_longitude?: number | null;
     arrival_latitude?: number | null;
     arrival_longitude?: number | null;
+    departure_location?: string;
+    arrival_location?: string;
+    provider?: string;
 }
 
 export interface TicketItem {
