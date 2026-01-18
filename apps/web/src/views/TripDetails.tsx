@@ -105,6 +105,12 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
         return itineraryCost + accommodationCost + transportCost;
     }, [trip]);
 
+    // Memoize sorted lists to prevent O(n log n) sorting on every render
+    const sortedItinerary = React.useMemo(() =>
+        (trip?.itinerary || []).toSorted((a, b) => a.day - b.day),
+        [trip?.itinerary]
+    );
+
     const [currency, setCurrency] = useState('USD');
     const [exchangeRates, setExchangeRates] = useState<Record<string, number>>({ USD: 1 });
     const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
@@ -270,7 +276,7 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
             {/* Timeline View */}
             {itineraryView === 'timeline' && (
                 <div className="relative border-l-2 border-border-color ml-3 pl-6 space-y-8">
-                    {(trip.itinerary || []).sort((a, b) => a.day - b.day).map((item, index) => (
+                    {sortedItinerary.map((item, index) => (
                         <div key={item.id || item.day} className="relative">
                             <div className="absolute -left-[2.4rem] bg-accent-primary text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-sm z-10">
                                 {item.day}
@@ -297,13 +303,13 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                             </div>
                         </div>
                     ))}
-                    {(trip.itinerary || []).length === 0 && <p className="text-text-secondary italic">No itinerary items yet.</p>}
+                    {sortedItinerary.length === 0 && <p className="text-text-secondary italic">No itinerary items yet.</p>}
                 </div>
             )}
 
             {/* Map View */}
             {itineraryView === 'map' && (
-                <ItineraryMap items={trip.itinerary || []} showRoutes={true} />
+                <ItineraryMap items={sortedItinerary} showRoutes={true} />
             )}
         </div>
     );
