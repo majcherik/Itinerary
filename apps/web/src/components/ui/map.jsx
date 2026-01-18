@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";;
 import MapLibreGL from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -98,6 +99,19 @@ const DefaultLoader = () => (
   </div>
 );
 
+/**
+ * @typedef {Object} MapProps
+ * @property {import('react').ReactNode} [children]
+ * @property {string} [theme]
+ * @property {Object} [styles]
+ * @property {string} [projection]
+ * @property {[number, number]} [center]
+ * @property {number} [zoom]
+ */
+
+/**
+ * @type {import('react').ForwardRefExoticComponent<MapProps & import('react').RefAttributes<any>>}
+ */
 const Map = forwardRef(function Map(
   { children, theme: themeProp, styles, projection, ...props },
   ref
@@ -201,6 +215,7 @@ const Map = forwardRef(function Map(
     </MapContext.Provider>
   );
 });
+Map.displayName = "Map";
 
 const MarkerContext = createContext(null);
 
