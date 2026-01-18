@@ -107,6 +107,7 @@ const DefaultLoader = () => (
  * @property {string} [projection]
  * @property {[number, number]} [center]
  * @property {number} [zoom]
+ * @property {Function} [onClick]
  */
 
 /**
