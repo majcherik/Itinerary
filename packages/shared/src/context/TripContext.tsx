@@ -16,6 +16,8 @@ export interface ItineraryItem {
     day: number;
     date: string;
     title: string;
+    activity?: string;
+    location_name?: string;
     description?: string;
     cost?: number | string;
     time?: string | null;
