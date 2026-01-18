@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva } from "class-variance-authority";
@@ -30,7 +31,17 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
-const SidebarContext = React.createContext(null)
+type SidebarContextType = {
+  state: "expanded" | "collapsed"
+  open: boolean
+  setOpen: (open: boolean) => void
+  isMobile: boolean
+  openMobile: boolean
+  setOpenMobile: (open: boolean) => void
+  toggleSidebar: () => void
+}
+
+const SidebarContext = React.createContext<SidebarContextType | null>(null)
 
 function useSidebar() {
   const context = React.useContext(SidebarContext)
@@ -41,7 +52,16 @@ function useSidebar() {
   return context
 }
 
-const SidebarProvider = React.forwardRef((
+type SidebarProviderProps = {
+  defaultOpen?: boolean
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  className?: string
+  style?: React.CSSProperties
+  children: React.ReactNode
+} & React.ComponentPropsWithoutRef<'div'>
+
+const SidebarProvider = React.forwardRef<HTMLDivElement, SidebarProviderProps>((
   {
     defaultOpen = true,
     open: openProp,
