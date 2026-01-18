@@ -550,8 +550,8 @@ function MapControls({
   showCompass = false,
   showLocate = false,
   showFullscreen = false,
-  className,
-  onLocate
+  className = "",
+  onLocate = undefined
 }) {
   const { map } = useMap();
   const [waitingForLocation, setWaitingForLocation] = useState(false);
