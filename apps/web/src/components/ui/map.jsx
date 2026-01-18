@@ -333,7 +333,7 @@ function MapMarker({
 
 function MarkerContent({
   children,
-  className
+  className = ""
 }) {
   const { marker } = useMarkerContext();
 
@@ -351,7 +351,7 @@ function DefaultMarkerIcon() {
 
 function MarkerPopup({
   children,
-  className,
+  className = "",
   closeButton = false,
   ...popupOptions
 }) {
@@ -420,7 +420,7 @@ function MarkerPopup({
 
 function MarkerTooltip({
   children,
-  className,
+  className = "",
   ...popupOptions
 }) {
   const { marker, map } = useMarkerContext();
@@ -484,7 +484,7 @@ function MarkerTooltip({
 
 function MarkerLabel({
   children,
-  className,
+  className = "",
   position = "top"
 }) {
   const positionClasses = {
