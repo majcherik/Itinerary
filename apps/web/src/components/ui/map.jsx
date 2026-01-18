@@ -231,12 +231,12 @@ function MapMarker({
   longitude,
   latitude,
   children,
-  onClick,
-  onMouseEnter,
-  onMouseLeave,
-  onDragStart,
-  onDrag,
-  onDragEnd,
+  onClick = undefined,
+  onMouseEnter = undefined,
+  onMouseLeave = undefined,
+  onDragStart = undefined,
+  onDrag = undefined,
+  onDragEnd = undefined,
   draggable = false,
   ...markerOptions
 }) {
