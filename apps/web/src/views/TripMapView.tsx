@@ -16,7 +16,7 @@ type MapLayer = 'itinerary' | 'accommodation' | 'transport' | 'destination';
  */
 const TripMapView: React.FC<TripMapViewProps> = ({ trip }) => {
   const [activeLayers, setActiveLayers] = useState<Set<MapLayer>>(
-    new Set(['itinerary', 'accommodation', 'transport', 'destination'])
+    new Set(['itinerary', 'accommodation', 'transport', 'destination'] as MapLayer[])
   );
 
   // Calculate map center and zoom based on all visible points
