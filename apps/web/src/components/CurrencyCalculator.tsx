@@ -1,8 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowRightLeft, RefreshCw, X, AlertCircle } from 'lucide-react';
-import CustomDropdown from './CustomDropdown';
+import React, { useState, useEffect, useMemo } from 'react';
+import { motion } from "framer-motion";
+import { ArrowLeftRight, TrendingUp, AlertCircle, X, Loader2 } from "lucide-react";
 import { useDebounceValue } from '@itinerary/shared';
 import { getCurrencyData } from '../lib/currency-utils';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 interface CurrencyCalculatorProps {
     onClose: () => void;
@@ -11,14 +18,16 @@ interface CurrencyCalculatorProps {
 const CurrencyCalculator: React.FC<CurrencyCalculatorProps> = ({ onClose }) => {
     const [currencies, setCurrencies] = useState<Record<string, string>>({});
     const [rates, setRates] = useState<Record<string, number>>({});
-    const [amount, setAmount] = useState<number | string>(1);
-    const [fromCurrency, setFromCurrency] = useState('USD');
-    const [toCurrency, setToCurrency] = useState('EUR');
+    const [amount, setAmount] = useState<string>("100");
+    const [fromCurrency, setFromCurrency] = useState("USD");
+    const [toCurrency, setToCurrency] = useState("EUR");
     const [result, setResult] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [converting, setConverting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isFlipped, setIsFlipped] = useState(false);
 
+    // Initial Data Load
     useEffect(() => {
         const loadData = async () => {
             try {
@@ -27,7 +36,6 @@ const CurrencyCalculator: React.FC<CurrencyCalculatorProps> = ({ onClose }) => {
                 setRates(data.rates);
                 setLoading(false);
             } catch (err) {
-                console.error('Error fetching currencies:', err);
                 setError('Failed to load currencies');
                 setLoading(false);
             }
@@ -37,27 +45,37 @@ const CurrencyCalculator: React.FC<CurrencyCalculatorProps> = ({ onClose }) => {
 
     const debouncedAmount = useDebounceValue(amount, 500);
 
+    // Conversion Logic
     useEffect(() => {
         const convert = () => {
-            if (!debouncedAmount || !fromCurrency || !toCurrency || Object.keys(rates).length === 0) return;
+            if (!debouncedAmount || !fromCurrency || !toCurrency || Object.keys(rates).length === 0) {
+                setResult(null);
+                setConverting(false);
+                return;
+            }
 
             setConverting(true);
             try {
                 const numAmount = typeof debouncedAmount === 'string' ? parseFloat(debouncedAmount) : debouncedAmount;
 
+                if (isNaN(numAmount)) {
+                    setError("Enter a valid amount");
+                    setResult(null);
+                    setConverting(false);
+                    return;
+                } else {
+                    setError(null);
+                }
+
                 // Convert from base currency (USD) to target
-                // First convert fromCurrency to USD, then USD to toCurrency
                 const fromRate = rates[fromCurrency] || 1;
                 const toRate = rates[toCurrency] || 1;
 
-                // If fromCurrency is USD, just multiply by toRate
-                // Otherwise, divide by fromRate to get USD amount, then multiply by toRate
                 const usdAmount = fromCurrency === 'USD' ? numAmount : numAmount / fromRate;
                 const converted = usdAmount * toRate;
 
                 setResult(converted);
             } catch (error) {
-                console.error('Error converting currency:', error);
                 setError('Conversion failed');
             } finally {
                 setConverting(false);
@@ -70,91 +88,174 @@ const CurrencyCalculator: React.FC<CurrencyCalculatorProps> = ({ onClose }) => {
     const handleSwap = () => {
         setFromCurrency(toCurrency);
         setToCurrency(fromCurrency);
+        setIsFlipped(!isFlipped);
     };
 
-    if (loading) return null;
+    const formattedResult = useMemo(() => {
+        if (result === null) return "0.00";
+        return result.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+    }, [result]);
+
+    // Helper to get currency symbol (fallback to code if not available in map, or just hardcode common ones if needed later)
+    // For now, using currency code as logic for finding symbol can be complex without a symbol map. 
+    // The provided code used currency.symbol, but our 'currencies' is a code->name map.
+    // We'll stick to displaying the Code in the select for simplicity unless we add a symbol map.
+    // Or we can try to guess/use a simple map for major ones.
+    const getSymbol = (code: string) => {
+        const symbols: Record<string, string> = {
+            USD: "$", EUR: "€", GBP: "£", JPY: "¥", AUD: "A$", CAD: "C$", CHF: "CHF", CNY: "¥", INR: "₹", MXN: "$"
+        };
+        return symbols[code] || "$";
+    }
+
+    const amountSymbol = getSymbol(fromCurrency);
+    const resultSymbol = getSymbol(toCurrency);
+
+    if (loading) return null; // Or a loading spinner modal
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-            <div className="bg-[var(--bg-card)] border border-border-color rounded-2xl shadow-2xl w-full max-w-md p-8 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-accent-primary"></div>
+            <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="group mx-auto w-full max-w-md relative"
+            >
+                <div className="absolute inset-0 bg-gradient-to-br from-foreground/[0.04] via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10 rounded-2xl" />
+
+                {/* Close Button Integration */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-text-secondary hover:text-text-primary transition-colors p-1 hover:bg-bg-secondary rounded-full"
+                    className="absolute -top-12 right-0 text-white/50 hover:text-white transition-colors p-2"
                 >
                     <X size={24} />
                 </button>
 
-                <h3 className="text-2xl font-bold mb-6 flex items-center gap-3 text-text-primary">
-                    <div className="p-2 bg-accent-primary/10 rounded-lg text-accent-primary">
-                        <RefreshCw size={24} />
-                    </div>
-                    Currency Calculator
-                </h3>
-
-                {error && (
-                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                        <AlertCircle size={16} />
-                        {error}
-                    </div>
-                )}
-
-                <div className="flex flex-col gap-6">
-                    <div>
-                        <label className="block text-sm font-bold text-text-secondary mb-2 uppercase tracking-wider">Amount</label>
-                        <input
-                            type="number"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                            className="w-full bg-white border border-border-color focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20 rounded-xl px-4 py-4 text-2xl font-bold outline-none transition-all placeholder:text-text-secondary/50 shadow-sm"
-                            placeholder="0.00"
-                        />
+                <div className="relative overflow-hidden border border-border/60 bg-card/95 backdrop-blur rounded-2xl shadow-2xl">
+                    <div className="space-y-1 px-6 pt-6 pb-4">
+                        <h2 className="flex items-center gap-2 text-2xl font-semibold text-foreground">
+                            <TrendingUp className="h-6 w-6 text-primary" />
+                            Currency Converter
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                            Real-time exchange rates
+                        </p>
                     </div>
 
-                    <div className="grid grid-cols-[1fr,auto,1fr] gap-4 items-end">
-                        <div className="flex flex-col gap-2">
-                            <label className="text-xs font-bold text-text-secondary uppercase tracking-wider">From</label>
-                            <CustomDropdown
-                                options={currencies}
-                                value={fromCurrency}
-                                onChange={setFromCurrency}
-                            />
+                    <div className="space-y-6 px-6 pb-6">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-muted-foreground">
+                                From
+                            </label>
+                            <div className="flex gap-3">
+                                <div className="relative flex-1">
+                                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">
+                                        {amountSymbol}
+                                    </span>
+                                    <input
+                                        type="number"
+                                        inputMode="decimal"
+                                        value={amount}
+                                        onChange={(event) => setAmount(event.target.value)}
+                                        placeholder="Amount"
+                                        className="w-full rounded-lg border border-border bg-background/50 px-8 py-3 text-lg font-semibold text-foreground shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-primary/40"
+                                    />
+                                </div>
+                                <div className="w-[140px]">
+                                    <Select value={fromCurrency} onValueChange={setFromCurrency}>
+                                        <SelectTrigger className="h-[50px] font-semibold">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Object.keys(currencies).sort().map((code) => (
+                                                <SelectItem key={code} value={code}>
+                                                    {code}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
                         </div>
 
-                        <button
-                            onClick={handleSwap}
-                            className="p-3 bg-bg-secondary rounded-full hover:bg-accent-primary hover:text-white transition-all hover:scale-110 active:scale-95 mb-1 shadow-sm"
-                            title="Swap Currencies"
-                        >
-                            <ArrowRightLeft size={20} />
-                        </button>
-
-                        <div className="flex flex-col gap-2">
-                            <label className="text-xs font-bold text-text-secondary uppercase tracking-wider">To</label>
-                            <CustomDropdown
-                                options={currencies}
-                                value={toCurrency}
-                                onChange={setToCurrency}
-                            />
+                        <div className="flex justify-center">
+                            <motion.button
+                                type="button"
+                                whileHover={{ scale: 1.06 }}
+                                whileTap={{ scale: 0.94 }}
+                                onClick={handleSwap}
+                                className="flex h-12 w-12 items-center justify-center rounded-full border border-border/70 bg-background/50 text-foreground transition hover:bg-background/70"
+                            >
+                                <ArrowLeftRight className="h-5 w-5" />
+                            </motion.button>
                         </div>
-                    </div>
 
-                    <div className="bg-accent-primary/5 rounded-2xl p-6 text-center border border-accent-primary/10 mt-2">
-                        <p className="text-text-secondary text-sm mb-2 font-medium">
-                            {amount} {fromCurrency} =
-                        </p>
-                        <p className="text-4xl font-bold text-accent-primary tracking-tight">
-                            {converting ? (
-                                <span className="animate-pulse opacity-50">...</span>
-                            ) : (
-                                <>
-                                    {result?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-xl opacity-80">{toCurrency}</span>
-                                </>
-                            )}
-                        </p>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-muted-foreground">
+                                To
+                            </label>
+                            <div className="flex gap-3">
+                                <motion.div
+                                    key={isFlipped ? "flipped" : "stationary"}
+                                    initial={{ rotateX: 90, opacity: 0 }}
+                                    animate={{ rotateX: 0, opacity: 1 }}
+                                    transition={{ duration: 0.3, ease: "easeOut" }}
+                                    className="relative flex-1"
+                                >
+                                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">
+                                        {resultSymbol}
+                                    </span>
+                                    <input
+                                        type="text"
+                                        value={formattedResult}
+                                        readOnly
+                                        className="w-full rounded-lg border border-border bg-background/30 px-8 py-3 text-lg font-semibold text-foreground shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-primary/40"
+                                    />
+                                </motion.div>
+                                <div className="w-[140px]">
+                                    <Select value={toCurrency} onValueChange={setToCurrency}>
+                                        <SelectTrigger className="h-[50px] font-semibold">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Object.keys(currencies).sort().map((code) => (
+                                                <SelectItem key={code} value={code}>
+                                                    {code}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {converting && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="flex items-center justify-center gap-2 rounded-lg border border-border bg-background/60 px-4 py-3 text-sm text-muted-foreground"
+                            >
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Calculating...
+                            </motion.div>
+                        )}
+
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-center text-sm font-medium text-destructive flex items-center justify-center gap-2"
+                            >
+                                <AlertCircle size={16} />
+                                {error}
+                            </motion.div>
+                        )}
                     </div>
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 };

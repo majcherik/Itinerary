@@ -90,7 +90,13 @@ const Auth: React.FC = () => {
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="password">Password</Label>
                                 {isLogin && (
-                                    <button type="button" className="text-sm hover:underline text-text-secondary" onClick={() => toast.info("Password reset not implemented yet.")}>
+                                    <button
+                                        type="button"
+                                        className="text-sm text-text-secondary opacity-50 cursor-not-allowed"
+                                        disabled
+                                        aria-disabled="true"
+                                        title="Password reset feature coming soon"
+                                    >
                                         Forgot your password?
                                     </button>
                                 )}

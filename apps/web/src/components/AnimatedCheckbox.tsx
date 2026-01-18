@@ -4,9 +4,10 @@ import styled from 'styled-components';
 interface AnimatedCheckboxProps {
   checked: boolean;
   onChange: () => void;
+  label?: string;
 }
 
-const AnimatedCheckbox: React.FC<AnimatedCheckboxProps> = ({ checked, onChange }) => {
+const AnimatedCheckbox: React.FC<AnimatedCheckboxProps> = ({ checked, onChange, label = "Checkbox" }) => {
   return (
     <StyledWrapper>
       <div className="checkbox-wrapper-31">
@@ -14,6 +15,7 @@ const AnimatedCheckbox: React.FC<AnimatedCheckboxProps> = ({ checked, onChange }
           type="checkbox"
           checked={checked}
           onChange={onChange}
+          aria-label={label}
         />
         <svg viewBox="0 0 35.6 35.6">
           <circle className="background" cx="17.8" cy="17.8" r="17.8" />

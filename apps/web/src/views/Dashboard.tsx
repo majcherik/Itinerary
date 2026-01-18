@@ -1,13 +1,14 @@
 import React from 'react';
 import { toast } from 'sonner';
-import { Calendar, Plus, Edit2, X, Clock } from 'lucide-react';
+import { Calendar, Plus, Edit2, X, Clock, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { geocodeCity } from '../lib/geocoding';
 
 // Cast Link to any to avoid "cannot be used as a JSX component" error
 const LinkAny = Link as any;
 import { useTrip, useDocumentTitle, useCountdown, Trip, formatDate } from '@itinerary/shared';
 import { Skeleton } from '../components/ui/skeleton';
-import WorldClock from '../components/WorldClock';
+import { AspectRatio } from '../components/ui/aspect-ratio';
 import AnimatedDeleteButton from '../components/AnimatedDeleteButton';
 
 const Dashboard: React.FC = () => {
@@ -39,6 +40,7 @@ const Dashboard: React.FC = () => {
     const [destination, setDestination] = React.useState('');
     const [startDate, setStartDate] = React.useState('');
     const [endDate, setEndDate] = React.useState('');
+    const [isGeocoding, setIsGeocoding] = React.useState(false);
 
     const openAddModal = () => {
         setEditingTrip(null);
@@ -57,33 +59,44 @@ const Dashboard: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    const handleSaveTrip = () => {
+    const handleSaveTrip = async () => {
         if (!destination || !startDate || !endDate) return;
 
-        if (editingTrip) {
-            updateTrip(editingTrip.id, {
-                destination, // Note: updateTrip expects 'title' or 'city' mapped from destination in context, but let's check context
-                // In TripContext.tsx: if (updates.title) dbUpdates.title = updates.title; if (updates.city) dbUpdates.city = updates.city;
-                // So we should pass title or city.
-                title: destination,
-                city: destination,
-                startDate: startDate,
-                endDate: endDate,
-            });
-            toast.success('Trip updated successfully');
-        } else {
-            const newTripData = {
+        setIsGeocoding(true);
+
+        try {
+            // Geocode the destination city to get coordinates
+            const geocodeResult = await geocodeCity(destination);
+
+            const tripData: any = {
                 title: destination,
                 city: destination,
                 startDate: startDate,
                 endDate: endDate,
                 heroImage: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=1000'
             };
-            addTrip(newTripData);
-            toast.success('Trip created successfully');
-        }
 
-        setIsModalOpen(false);
+            // Add coordinates if geocoding was successful
+            if (geocodeResult) {
+                tripData.latitude = geocodeResult.latitude;
+                tripData.longitude = geocodeResult.longitude;
+            }
+
+            if (editingTrip) {
+                await updateTrip(editingTrip.id, tripData);
+                toast.success('Trip updated successfully');
+            } else {
+                await addTrip(tripData);
+                toast.success('Trip created successfully');
+            }
+
+            setIsModalOpen(false);
+        } catch (error) {
+            console.error('Error saving trip:', error);
+            toast.error('Failed to save trip');
+        } finally {
+            setIsGeocoding(false);
+        }
     };
 
     const handleDeleteTrip = (id: number | string, e: React.MouseEvent) => {
@@ -98,7 +111,10 @@ const Dashboard: React.FC = () => {
         <div className="flex flex-col gap-6">
             <div className="flex justify-between items-end">
                 <div>
-                    <h2 className="text-2xl font-bold">My Trips</h2>
+                    <div className="flex items-center gap-3 mb-2">
+                        <h2 className="text-2xl font-bold text-foreground">My Trips</h2>
+                        <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">Beta</span>
+                    </div>
                     <p className="text-text-secondary">Manage your upcoming adventures</p>
                 </div>
                 {upcomingTrip && days >= 0 && (
@@ -126,7 +142,6 @@ const Dashboard: React.FC = () => {
                     </div>
                 )}
                 <div className="flex gap-3">
-                    <WorldClock />
                     <button onClick={openAddModal} className="btn btn-primary flex items-center gap-2">
                         <Plus size={20} /> New Trip
                     </button>
@@ -163,15 +178,15 @@ const Dashboard: React.FC = () => {
                                     </button>
                                     <div className="p-2 bg-white/90 rounded-full shadow-md">
                                         <AnimatedDeleteButton
-                                            onClick={() => handleDeleteTrip(trip.id, null as any)}
+                                            onClick={(e) => handleDeleteTrip(trip.id, e)}
                                         />
                                     </div>
                                 </div>
 
-                                <div className="h-32 overflow-hidden relative">
-                                    <img src={trip.hero_image || trip.image} alt={trip.title} className="w-full h-full object-cover" />
+                                <AspectRatio ratio={16 / 9} className="bg-muted">
+                                    <img src={trip.hero_image || trip.image} alt={trip.title} className="w-full h-full object-cover rounded-t-lg" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                                </div>
+                                </AspectRatio>
                                 <div className="p-4">
                                     <h3 className="text-xl font-bold mb-2 text-text-primary">{trip.title}</h3>
                                     <div className="flex items-center gap-2 text-text-secondary text-sm">
@@ -227,8 +242,15 @@ const Dashboard: React.FC = () => {
                         </div>
 
                         <div className="flex justify-end gap-2 mt-4">
-                            <button onClick={() => setIsModalOpen(false)} className="btn btn-outline">Cancel</button>
-                            <button onClick={handleSaveTrip} className="btn btn-primary">{editingTrip ? 'Save Changes' : 'Create Trip'}</button>
+                            <button onClick={() => setIsModalOpen(false)} className="btn btn-outline" disabled={isGeocoding}>Cancel</button>
+                            <button
+                                onClick={handleSaveTrip}
+                                className="btn btn-primary flex items-center gap-2"
+                                disabled={isGeocoding || !destination || !startDate || !endDate}
+                            >
+                                {isGeocoding && <Loader2 size={16} className="animate-spin" />}
+                                {editingTrip ? 'Save Changes' : 'Create Trip'}
+                            </button>
                         </div>
                     </div>
                 </div>

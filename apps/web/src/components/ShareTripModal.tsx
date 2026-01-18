@@ -57,7 +57,6 @@ const ShareTripModal: React.FC<ShareTripModalProps> = ({
             setShareUrl(data.shareLink.url);
             toast.success('Share link created!');
         } catch (error: any) {
-            console.error('Error creating share link:', error);
             toast.error(error.message || 'Failed to create share link');
         } finally {
             setLoading(false);
@@ -73,7 +72,6 @@ const ShareTripModal: React.FC<ShareTripModalProps> = ({
             toast.success('Link copied to clipboard!');
             setTimeout(() => setCopied(false), 2000);
         } catch (error) {
-            console.error('Error copying to clipboard:', error);
             toast.error('Failed to copy link');
         }
     };

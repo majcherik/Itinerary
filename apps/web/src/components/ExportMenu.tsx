@@ -23,13 +23,20 @@ import {
     generateExpensesCSV,
     generateJSONExport,
 } from '@itinerary/shared';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ExportMenuProps {
     trip: Trip;
 }
 
 const ExportMenu: React.FC<ExportMenuProps> = ({ trip }) => {
-    const [isOpen, setIsOpen] = useState(false);
     const [exporting, setExporting] = useState<string | null>(null);
 
     const downloadFile = (blob: Blob, filename: string) => {
@@ -110,7 +117,6 @@ const ExportMenu: React.FC<ExportMenuProps> = ({ trip }) => {
                     toast.error('Unknown export type');
             }
         } catch (error) {
-            console.error('Export error:', error);
             toast.error('Failed to export. Please try again.');
         } finally {
             setExporting(null);
@@ -163,69 +169,50 @@ const ExportMenu: React.FC<ExportMenuProps> = ({ trip }) => {
     ];
 
     return (
-        <div className="relative">
-            <Button
-                onClick={() => setIsOpen(!isOpen)}
-                variant="outline"
-                className="flex items-center gap-2"
-            >
-                <FileDown className="w-4 h-4" />
-                Export
-            </Button>
-
-            {isOpen && (
-                <>
-                    {/* Backdrop */}
-                    <div
-                        className="fixed inset-0 z-40"
-                        onClick={() => setIsOpen(false)}
-                    />
-
-                    {/* Dropdown Menu */}
-                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-y-auto">
-                        <div className="p-3 border-b border-gray-200">
-                            <h3 className="font-semibold text-text-primary">Export Trip</h3>
-                            <p className="text-xs text-text-secondary mt-1">
-                                Choose a format to download
-                            </p>
-                        </div>
-
-                        <div className="p-2">
-                            {exportOptions.map((option) => {
-                                const Icon = option.icon;
-                                const isExporting = exporting === option.type;
-
-                                return (
-                                    <button
-                                        key={option.type}
-                                        onClick={() => {
-                                            handleExport(option.type);
-                                            setIsOpen(false);
-                                        }}
-                                        disabled={isExporting}
-                                        className="w-full text-left p-3 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        <div className="flex items-start gap-3">
-                                            <Icon className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                                            <div className="flex-1 min-w-0">
-                                                <p className="font-medium text-sm text-text-primary">
-                                                    {option.label}
-                                                </p>
-                                                <p className="text-xs text-text-secondary mt-0.5">
-                                                    {isExporting
-                                                        ? 'Exporting...'
-                                                        : option.description}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </button>
-                                );
-                            })}
-                        </div>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                    <FileDown className="w-4 h-4" />
+                    Export
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+                <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                        <span className="font-semibold">Export Trip</span>
+                        <span className="text-xs font-normal text-muted-foreground">Choose a format to download</span>
                     </div>
-                </>
-            )}
-        </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="max-h-96 overflow-y-auto">
+                    {exportOptions.map((option) => {
+                        const Icon = option.icon;
+                        const isExporting = exporting === option.type;
+
+                        return (
+                            <DropdownMenuItem
+                                key={option.type}
+                                onClick={() => handleExport(option.type)}
+                                disabled={isExporting}
+                                className="cursor-pointer"
+                            >
+                                <div className="flex items-start gap-3 w-full">
+                                    <Icon className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-medium text-sm">
+                                            {option.label}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                            {isExporting ? 'Exporting...' : option.description}
+                                        </p>
+                                    </div>
+                                </div>
+                            </DropdownMenuItem>
+                        );
+                    })}
+                </div>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 };
 

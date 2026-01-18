@@ -40,10 +40,7 @@ export const MenuDock: React.FC<MenuDockProps> = ({
     const finalItems = useMemo(() => {
         const isValid = items && Array.isArray(items) && items.length >= 2 && items.length <= 8;
         if (!isValid) {
-            console.warn(
-                "MenuDock: 'items' prop is invalid or missing. Using default items.",
-                items
-            );
+            // Items prop is invalid or missing, using default items
             return defaultItems;
         }
         return items;

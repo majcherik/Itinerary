@@ -32,7 +32,6 @@ export function getCachedCurrencyData(): CurrencyCache | null {
         localStorage.removeItem(CACHE_KEY);
         return null;
     } catch (error) {
-        console.error('Error reading currency cache:', error);
         return null;
     }
 }
@@ -51,7 +50,7 @@ export function saveCurrencyCache(currencies: Record<string, string>, rates: Rec
         };
         localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
     } catch (error) {
-        console.error('Error saving currency cache:', error);
+        // Silently fail if localStorage is unavailable
     }
 }
 
@@ -120,7 +119,7 @@ export function convertFromUSD(amountInUSD: number, targetCurrency: string, rate
 
     const rate = rates[targetCurrency];
     if (!rate) {
-        console.warn(`Exchange rate not found for ${targetCurrency}, returning USD amount`);
+        // Exchange rate not found, return USD amount
         return amountInUSD;
     }
 

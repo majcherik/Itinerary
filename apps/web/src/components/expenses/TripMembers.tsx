@@ -39,7 +39,6 @@ const TripMembers: React.FC<TripMembersProps> = ({ trip, onClose }) => {
             toast.success('Members updated');
             onClose();
         } catch (error) {
-            console.error(error);
             toast.error('Failed to update members');
         }
     };

@@ -54,7 +54,6 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ trip, onClose }) => {
             toast.success('Expense added');
             onClose();
         } catch (error) {
-            console.error(error);
             toast.error('Failed to add expense');
         }
     };

@@ -28,13 +28,19 @@ const timezones = [
     { label: 'LAX', zone: 'America/Los_Angeles' },
 ];
 
-const WorldClock = () => (
+interface WorldClockProps {
+    trigger?: React.ReactNode;
+}
+
+const WorldClock = ({ trigger }: WorldClockProps) => (
     <Drawer direction="right">
         <DrawerTrigger asChild>
-            <Button variant="outline" className="gap-2">
-                <Globe size={16} />
-                World Clock
-            </Button>
+            {trigger || (
+                <Button variant="outline" className="gap-2">
+                    <Globe size={16} />
+                    World Clock
+                </Button>
+            )}
         </DrawerTrigger>
         <DrawerContent>
             <DrawerHeader>

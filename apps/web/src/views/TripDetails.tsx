@@ -5,20 +5,28 @@ import Link from 'next/link';
 
 // Cast Link to any to avoid "cannot be used as a JSX component" error
 const LinkAny = Link as any;
-import Tabs from '../components/Tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Button } from '../components/ui/button';
 import CurrencyConverter from '../components/CurrencyConverter';
 import CurrencyCalculator from '../components/CurrencyCalculator';
 import { convertFromUSD } from '../lib/currency-utils';
 import Modal from '../components/Modal';
 import ShareTripModal from '../components/ShareTripModal';
 import ExportMenu from '../components/ExportMenu';
-import { MapPin, Calendar, Home, Train, Plus, Clock, Copy, Check, ArrowLeft, Share2, MoreVertical, Edit2, CheckCircle2, Circle, X, ExternalLink, Banknote } from 'lucide-react';
+import { MapPin, Calendar, Home, Train, Plus, Clock, Copy, Check, ArrowLeft, Share2, MoreVertical, Edit2, CheckCircle2, Circle, X, ExternalLink, Banknote, Trash2, Map as MapIcon, List } from 'lucide-react';
 import { useTrip, useCopyToClipboard, useDocumentTitle, useLocalStorage, Trip, ItineraryItem, AccommodationItem, TransportItem, formatDate, formatDateTime } from '@itinerary/shared';
 import FadeIn from '../components/FadeIn';
 import { Skeleton } from '../components/ui/skeleton';
 import ItineraryTimeline from '../components/ItineraryTimeline';
 import ExpensesTab from '../components/expenses/ExpensesTab';
 import AnimatedDeleteButton from '../components/AnimatedDeleteButton';
+import Breadcrumbs from '../components/Breadcrumbs';
+import TripOverviewMap from '../components/maps/TripOverviewMap';
+import ItineraryMap from '../components/maps/ItineraryMap';
+import AccommodationMap from '../components/maps/AccommodationMap';
+import TransportRouteMap from '../components/maps/TransportRouteMap';
+import LocationPicker from '../components/maps/LocationPicker';
+import AddressSearchInput from '../components/maps/AddressSearchInput';
 
 interface TripDetailsProps {
     tripId?: string | number;
@@ -55,8 +63,11 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
         date: string;
         description: string;
         items: { title: string; cost: string }[];
+        latitude?: number;
+        longitude?: number;
+        locationName?: string;
     }
-    const [itineraryForm, setItineraryForm] = useState<ItineraryFormState>({ day: '', date: '', description: '', items: [{ title: '', cost: '' }] });
+    const [itineraryForm, setItineraryForm] = useState<ItineraryFormState>({ day: '', date: '', description: '', items: [{ title: '', cost: '' }], latitude: undefined, longitude: undefined, locationName: '' });
 
     interface AccommodationFormState {
         name: string;
@@ -65,8 +76,10 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
         checkOut: string;
         type: string;
         cost: string;
+        latitude?: number;
+        longitude?: number;
     }
-    const [accommodationForm, setAccommodationForm] = useState<AccommodationFormState>({ name: '', address: '', checkIn: '', checkOut: '', type: 'Hotel', cost: '' });
+    const [accommodationForm, setAccommodationForm] = useState<AccommodationFormState>({ name: '', address: '', checkIn: '', checkOut: '', type: 'Hotel', cost: '', latitude: undefined, longitude: undefined });
 
     interface TransportFormState {
         type: string;
@@ -76,8 +89,12 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
         depart: string;
         arrive: string;
         cost: string;
+        departure_latitude?: number;
+        departure_longitude?: number;
+        arrival_latitude?: number;
+        arrival_longitude?: number;
     }
-    const [transportForm, setTransportForm] = useState<TransportFormState>({ type: 'Flight', number: '', from: '', to: '', depart: '', arrive: '', cost: '' });
+    const [transportForm, setTransportForm] = useState<TransportFormState>({ type: 'Flight', number: '', from: '', to: '', depart: '', arrive: '', cost: '', departure_latitude: undefined, departure_longitude: undefined, arrival_latitude: undefined, arrival_longitude: undefined });
 
     // Calculate Total Cost
     const totalCost = React.useMemo(() => {
@@ -93,6 +110,7 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
     const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useLocalStorage(`trip-details-tab-${id}`, 'itinerary');
+    const [itineraryView, setItineraryView] = useState<'timeline' | 'map'>('timeline');
 
     if (loading) {
         return (
@@ -130,9 +148,11 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
         return (
             <div className="flex flex-col items-center justify-center h-[50vh] gap-4">
                 <h2 className="text-2xl font-bold text-text-secondary">Trip not found</h2>
-                <LinkAny href="/" className="btn btn-primary">
-                    Return to Dashboard
-                </LinkAny>
+                <Button asChild>
+                    <LinkAny href="/">
+                        Return to Dashboard
+                    </LinkAny>
+                </Button>
             </div>
         );
     }
@@ -152,60 +172,21 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
         itineraryForm.items.forEach(item => {
             if (item.title) {
                 addItineraryItem(id as string, {
-                    id: Date.now() + Math.random(), // Ensure unique ID for batch add
+                    id: Date.now() + Math.random(),
                     day: Number(itineraryForm.day),
-                    date: itineraryForm.date, // Note: TripContext maps date to day column, but here we have day number and date string.
-                    // In TripContext addItineraryItem: day: item.date (which was mapped to day column).
-                    // Wait, TripContext logic: day: item.date.
-                    // Here we pass day number as day, and date string as date.
-                    // Let's check TripContext again.
-                    // TripContext: day: item.date.
-                    // It seems I might have mapped it confusingly in TripContext or here.
-                    // In TripContext: day: item.date.
-                    // If I pass { date: 1 } it will be day=1.
-                    // If I pass { date: "2023-01-01" } it will be day="2023-01-01".
-                    // The DB column is 'day' (integer usually for day number) or 'date' (date)?
-                    // Looking at TripContext interface: day: number; date: string;
-                    // But addItineraryItemMutation uses: day: item.date.
-                    // This suggests item.date should be the day number? Or the date string?
-                    // Let's assume the context expects 'date' property to map to 'day' column, which might be day number.
-                    // But here we have both.
-                    // Let's pass 'date' as the day number for now to match context logic if that's what it does,
-                    // OR fix context.
-                    // In TripContext: day: item.date.
-                    // If I want to store day number, I should pass it in 'date' property of item? That's weird.
-                    // Let's look at TripContext.tsx again.
-                    // insert([{ ..., day: item.date, ... }])
-                    // So 'day' column gets 'item.date'.
-                    // If 'day' column is integer, item.date must be integer.
-                    // Here itineraryForm.day is the day number.
-                    // So I should pass date: itineraryForm.day.
-                    // But I also have itineraryForm.date (the actual date string).
-                    // Does the DB have a date column?
-                    // TripContext interface says ItineraryItem has 'date: string'.
-                    // But mutation only inserts 'day', 'activity', 'notes', 'cost', 'time'.
-                    // It seems 'date' column is missing in insert?
-                    // Or 'day' column is used for date string?
-                    // Let's assume 'day' column is for day number (1, 2, 3) or date string.
-                    // Given the UI shows "Day 1", "Day 2", it likely uses day number.
-                    // But it also shows date string.
-                    // Let's pass day: itineraryForm.day and hope the context handles it or I should have fixed context.
-                    // Since I can't easily change context now without context switching, I will pass what seems logical.
-                    // I will pass 'date' as itineraryForm.day (to satisfy the 'day' column mapping in context).
-                    // And I will append date string to description or title if needed, or maybe the context was wrong.
-                    // Actually, let's just pass it as is and see.
-                    // I'll pass date: itineraryForm.day.
+                    date: itineraryForm.date,
                     description: itineraryForm.description,
                     title: item.title,
-                    cost: item.cost
+                    cost: item.cost,
+                    latitude: itineraryForm.latitude,
+                    longitude: itineraryForm.longitude,
+                    location_name: itineraryForm.locationName
                 });
             }
         });
         toast.success('Itinerary items added');
-
-
         setActiveModal(null);
-        setItineraryForm({ day: '', date: '', description: '', items: [{ title: '', cost: '' }] });
+        setItineraryForm({ day: '', date: '', description: '', items: [{ title: '', cost: '' }], latitude: undefined, longitude: undefined, locationName: '' });
     };
 
     const handleAddItemRow = () => {
@@ -228,51 +209,102 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
 
     const handleSaveAccommodation = () => {
         if (!accommodationForm.name) return;
-        addAccommodation(id as string, { ...accommodationForm, id: Date.now() });
+        addAccommodation(id as string, {
+            ...accommodationForm,
+            id: Date.now(),
+            latitude: accommodationForm.latitude,
+            longitude: accommodationForm.longitude
+        });
         toast.success('Accommodation added');
         setActiveModal(null);
-        setAccommodationForm({ name: '', address: '', checkIn: '', checkOut: '', type: 'Hotel', cost: '' });
+        setAccommodationForm({ name: '', address: '', checkIn: '', checkOut: '', type: 'Hotel', cost: '', latitude: undefined, longitude: undefined });
     };
 
     const handleSaveTransport = () => {
         if (!transportForm.type || !transportForm.number) return;
-        addTransport(id as string, { ...transportForm, id: Date.now() });
+        addTransport(id as string, {
+            ...transportForm,
+            id: Date.now(),
+            departure_latitude: transportForm.departure_latitude,
+            departure_longitude: transportForm.departure_longitude,
+            arrival_latitude: transportForm.arrival_latitude,
+            arrival_longitude: transportForm.arrival_longitude
+        });
         toast.success('Transport added');
         setActiveModal(null);
-        setTransportForm({ type: 'Flight', number: '', from: '', to: '', depart: '', arrive: '', cost: '' });
+        setTransportForm({ type: 'Flight', number: '', from: '', to: '', depart: '', arrive: '', cost: '', departure_latitude: undefined, departure_longitude: undefined, arrival_latitude: undefined, arrival_longitude: undefined });
     };
 
     const Itinerary = () => (
         <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center">
                 <h3 className="font-bold text-lg">Itinerary</h3>
-                <button onClick={() => setActiveModal('itinerary')} className="btn btn-sm btn-outline flex items-center gap-1 text-xs">
-                    <Plus size={14} /> Add Item
-                </button>
-            </div>
-            <div className="relative border-l-2 border-border-color ml-3 pl-6 space-y-8">
-                {(trip.itinerary || []).sort((a, b) => a.day - b.day).map((item, index) => (
-                    <div key={item.id || item.day} className="relative">
-                        <div className="absolute -left-[2.4rem] bg-accent-primary text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-sm z-10">
-                            {item.day}
-                        </div>
-                        <div className="card group relative pr-10">
-                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all">
-                                <AnimatedDeleteButton
-                                    onClick={() => deleteItineraryItem(id as string, item.id as string)}
-                                />
-                            </div>
-                            <span className="text-xs font-bold text-accent-primary uppercase tracking-wider">{formatDate(item.date)}</span>
-                            <div className="flex justify-between items-start">
-                                <h4 className="font-bold text-lg mt-1">{item.title}</h4>
-                                {item.cost && <span className="text-sm font-semibold text-text-primary bg-bg-secondary px-2 py-1 rounded">${item.cost}</span>}
-                            </div>
-                            <p className="text-text-secondary text-sm mt-2">{item.description}</p>
-                        </div>
+                <div className="flex items-center gap-2">
+                    {/* View Toggle */}
+                    <div className="flex items-center gap-1 border border-border-color rounded-md p-1">
+                        <Button
+                            variant={itineraryView === 'timeline' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => setItineraryView('timeline')}
+                            className="h-7 text-xs px-2 gap-1 rounded-sm"
+                        >
+                            <List size={14} />
+                            Timeline
+                        </Button>
+                        <Button
+                            variant={itineraryView === 'map' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => setItineraryView('map')}
+                            className="h-7 text-xs px-2 gap-1 rounded-sm"
+                        >
+                            <MapIcon size={14} />
+                            Map
+                        </Button>
                     </div>
-                ))}
-                {(trip.itinerary || []).length === 0 && <p className="text-text-secondary italic">No itinerary items yet.</p>}
+                    <Button variant="outline" size="sm" onClick={() => setActiveModal('itinerary')} className="h-8 text-xs gap-1">
+                        <Plus size={14} /> Add Item
+                    </Button>
+                </div>
             </div>
+
+            {/* Timeline View */}
+            {itineraryView === 'timeline' && (
+                <div className="relative border-l-2 border-border-color ml-3 pl-6 space-y-8">
+                    {(trip.itinerary || []).sort((a, b) => a.day - b.day).map((item, index) => (
+                        <div key={item.id || item.day} className="relative">
+                            <div className="absolute -left-[2.4rem] bg-accent-primary text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-sm z-10">
+                                {item.day}
+                            </div>
+                            <div className="card group relative pr-10">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (window.confirm('Delete this event?')) {
+                                            deleteItineraryItem(id as string, item.id as string);
+                                        }
+                                    }}
+                                    className="absolute top-3 right-3 p-2 bg-white/90 rounded-full text-text-secondary hover:text-red-500 hover:bg-red-50 shadow-md transition-all opacity-0 group-hover:opacity-100"
+                                    title="Delete Event"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                                <span className="text-xs font-bold text-accent-primary uppercase tracking-wider">{formatDate(item.date)}</span>
+                                <div className="flex justify-between items-start">
+                                    <h4 className="font-bold text-lg mt-1">{item.title}</h4>
+                                    {item.cost && <span className="text-sm font-semibold text-text-primary bg-bg-secondary px-2 py-1 rounded">${item.cost}</span>}
+                                </div>
+                                <p className="text-text-secondary text-sm mt-2">{item.description}</p>
+                            </div>
+                        </div>
+                    ))}
+                    {(trip.itinerary || []).length === 0 && <p className="text-text-secondary italic">No itinerary items yet.</p>}
+                </div>
+            )}
+
+            {/* Map View */}
+            {itineraryView === 'map' && (
+                <ItineraryMap items={trip.itinerary || []} showRoutes={true} />
+            )}
         </div>
     );
 
@@ -280,19 +312,26 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
         <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center">
                 <h3 className="font-bold text-lg">Stays</h3>
-                <button onClick={() => setActiveModal('accommodation')} className="btn btn-sm btn-outline flex items-center gap-1 text-xs">
+                <Button variant="outline" size="sm" onClick={() => setActiveModal('accommodation')} className="h-8 text-xs gap-1">
                     <Plus size={14} /> Add Stay
-                </button>
+                </Button>
             </div>
             <div className="grid gap-4">
                 {(trip.accommodation || []).map((place, index) => (
                     <FadeIn key={place.id || place.name} delay={index * 100}>
                         <div className="card flex gap-4 group relative pr-10">
-                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all">
-                                <AnimatedDeleteButton
-                                    onClick={() => deleteAccommodation(id as string, place.id as string)}
-                                />
-                            </div>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (window.confirm('Delete this accommodation?')) {
+                                        deleteAccommodation(id as string, place.id as string);
+                                    }
+                                }}
+                                className="absolute top-3 right-3 p-2 bg-white/90 rounded-full text-text-secondary hover:text-red-500 hover:bg-red-50 shadow-md transition-all opacity-0 group-hover:opacity-100"
+                                title="Delete Accommodation"
+                            >
+                                <Trash2 size={16} />
+                            </button>
                             <div className="p-3 bg-bg-primary rounded-lg h-fit">
                                 <Home size={24} className="text-accent-secondary" />
                             </div>
@@ -326,6 +365,11 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                 ))}
                 {(trip.accommodation || []).length === 0 && <p className="text-text-secondary italic">No accommodation added yet.</p>}
             </div>
+
+            {/* Accommodation Map */}
+            {(trip.accommodation || []).length > 0 && (
+                <AccommodationMap accommodations={trip.accommodation || []} className="mt-2" />
+            )}
         </div>
     );
 
@@ -333,19 +377,26 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
         <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center">
                 <h3 className="font-bold text-lg">Transport</h3>
-                <button onClick={() => setActiveModal('transport')} className="btn btn-sm btn-outline flex items-center gap-1 text-xs">
+                <Button variant="outline" size="sm" onClick={() => setActiveModal('transport')} className="h-8 text-xs gap-1">
                     <Plus size={14} /> Add Transport
-                </button>
+                </Button>
             </div>
             <div className="grid gap-4">
                 {(trip.transport || []).map((ride, index) => (
                     <FadeIn key={ride.id || ride.number} delay={index * 100}>
                         <div className="card group relative pr-10">
-                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all">
-                                <AnimatedDeleteButton
-                                    onClick={() => deleteTransport(id as string, ride.id as string)}
-                                />
-                            </div>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (window.confirm('Delete this transport?')) {
+                                        deleteTransport(id as string, ride.id as string);
+                                    }
+                                }}
+                                className="absolute top-3 right-3 p-2 bg-white/90 rounded-full text-text-secondary hover:text-red-500 hover:bg-red-50 shadow-md transition-all opacity-0 group-hover:opacity-100"
+                                title="Delete Transport"
+                            >
+                                <Trash2 size={16} />
+                            </button>
                             <div className="flex justify-between items-start mb-4">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-bg-primary rounded-lg">
@@ -359,7 +410,7 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                                 {ride.cost && <span className="text-sm font-semibold text-text-primary bg-bg-secondary px-2 py-1 rounded">${ride.cost}</span>}
                             </div>
 
-                            <div className="flex justify-between items-center text-sm">
+                            <div className="flex justify-between items-center text-sm mb-4">
                                 <div>
                                     <span className="text-text-secondary text-xs block">Depart</span>
                                     <span className="font-semibold">{formatDateTime(ride.depart)}</span>
@@ -370,6 +421,11 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                                     <span className="font-semibold">{formatDateTime(ride.arrive)}</span>
                                 </div>
                             </div>
+
+                            {/* Transport Route Map */}
+                            {ride.departure_latitude && ride.departure_longitude && ride.arrival_latitude && ride.arrival_longitude && (
+                                <TransportRouteMap transport={ride} className="mt-4" />
+                            )}
                         </div>
                     </FadeIn>
                 ))}
@@ -389,14 +445,15 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                     <p className="text-text-secondary max-w-md mx-auto mb-6">
                         Visualize your trip itinerary and saved locations on an interactive map.
                     </p>
-                    <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trip.city || trip.title)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn btn-primary inline-flex items-center gap-2"
-                    >
-                        <MapPin size={18} /> Open {trip.city || trip.title} in Google Maps
-                    </a >
+                    <Button asChild className="gap-2">
+                        <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trip.city || trip.title)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <MapPin size={18} /> Open {trip.city || trip.title} in Google Maps
+                        </a>
+                    </Button>
                 </div >
             </div >
 
@@ -466,24 +523,31 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
 
     return (
         <div className="flex flex-col gap-4">
+            {/* Breadcrumbs */}
+            <Breadcrumbs items={[{ label: trip.title }]} />
+
             {/* Header Section without Image */}
             <div className="flex items-center gap-4">
                 <div className="flex-1">
                     <h1 className="text-3xl font-bold mb-1">{trip.title}</h1>
                     <p className="text-text-secondary text-sm mb-2">{dateString}</p>
                     <div className="flex items-center gap-3 flex-wrap">
-                        <button
+                        <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => setIsCalculatorOpen(true)}
-                            className="btn btn-sm btn-outline flex items-center gap-2 text-xs"
+                            className="h-8 text-xs gap-2"
                         >
                             <Clock size={14} /> Currency Calculator
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => setIsShareModalOpen(true)}
-                            className="btn btn-sm btn-outline flex items-center gap-2 text-xs"
+                            className="h-8 text-xs gap-2"
                         >
                             <Share2 size={14} /> Share Trip
-                        </button>
+                        </Button>
                         <ExportMenu trip={trip} />
                     </div>
                 </div>
@@ -503,6 +567,16 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                 </div>
             </div>
 
+            {/* Trip Overview Map */}
+            {trip.latitude && trip.longitude && (
+                <TripOverviewMap
+                    latitude={trip.latitude}
+                    longitude={trip.longitude}
+                    city={trip.city || trip.title}
+                    className="mt-4"
+                />
+            )}
+
             {isCalculatorOpen && <CurrencyCalculator onClose={() => setIsCalculatorOpen(false)} />}
 
             <ShareTripModal
@@ -513,10 +587,23 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
             />
 
             <Tabs
-                tabs={tabs}
-                activeTab={activeTab}
-                onTabChange={(id) => setActiveTab(String(id))}
-            />
+                value={activeTab}
+                onValueChange={(value) => setActiveTab(value)}
+                className="w-full"
+            >
+                <TabsList className="w-full justify-start overflow-x-auto">
+                    {tabs.map((tab) => (
+                        <TabsTrigger key={tab.id} value={tab.id}>
+                            {tab.label}
+                        </TabsTrigger>
+                    ))}
+                </TabsList>
+                {tabs.map((tab) => (
+                    <TabsContent key={tab.id} value={tab.id} className="mt-4">
+                        {tab.content}
+                    </TabsContent>
+                ))}
+            </Tabs>
 
             {/* Modals */}
             <Modal
@@ -525,8 +612,8 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                 title="Add Itinerary Item"
                 footer={
                     <>
-                        <button onClick={() => setActiveModal(null)} className="btn btn-outline">Cancel</button>
-                        <button onClick={handleSaveItinerary} className="btn btn-primary">Add Items</button>
+                        <Button variant="outline" onClick={() => setActiveModal(null)}>Cancel</Button>
+                        <Button onClick={handleSaveItinerary}>Add Items</Button>
                     </>
                 }
             >
@@ -545,6 +632,37 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                     <div>
                         <label className="text-sm font-medium mb-1 block">Description (Optional)</label>
                         <textarea className="input min-h-[60px]" placeholder="General notes for the day..." value={itineraryForm.description} onChange={e => setItineraryForm({ ...itineraryForm, description: e.target.value })} />
+                    </div>
+
+                    <div>
+                        <label className="text-sm font-medium mb-1 block">Location (Optional)</label>
+                        <AddressSearchInput
+                            placeholder="Search for location..."
+                            onSelectLocation={(result) => {
+                                setItineraryForm({
+                                    ...itineraryForm,
+                                    locationName: result.display_name,
+                                    latitude: result.latitude,
+                                    longitude: result.longitude
+                                });
+                            }}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="text-sm font-medium mb-1 block">Pick Location on Map (optional)</label>
+                        <LocationPicker
+                            initialLatitude={itineraryForm.latitude || 40.7128}
+                            initialLongitude={itineraryForm.longitude || -74.006}
+                            onLocationChange={(lat, lng, address) => {
+                                setItineraryForm({
+                                    ...itineraryForm,
+                                    latitude: lat,
+                                    longitude: lng,
+                                    locationName: address || itineraryForm.locationName || ''
+                                });
+                            }}
+                        />
                     </div>
 
                     <div className="border-t border-border-color pt-3 mt-1">
@@ -572,15 +690,15 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                                     </div>
                                     {itineraryForm.items.length > 1 && (
                                         <div className="p-2 mt-1">
-                                            <AnimatedDeleteButton onClick={() => handleRemoveItemRow(index)} />
+                                            <AnimatedDeleteButton onClick={(e) => { e.stopPropagation(); handleRemoveItemRow(index); }} />
                                         </div>
                                     )}
                                 </div>
                             ))}
                         </div>
-                        <button onClick={handleAddItemRow} className="btn btn-sm btn-outline mt-3 flex items-center gap-1">
+                        <Button variant="outline" size="sm" onClick={handleAddItemRow} className="mt-3 gap-1 h-8">
                             <Plus size={14} /> Add Another Activity
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </Modal>
@@ -591,8 +709,8 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                 title="Add Accommodation"
                 footer={
                     <>
-                        <button onClick={() => setActiveModal(null)} className="btn btn-outline">Cancel</button>
-                        <button onClick={handleSaveAccommodation} className="btn btn-primary">Add Stay</button>
+                        <Button variant="outline" onClick={() => setActiveModal(null)}>Cancel</Button>
+                        <Button onClick={handleSaveAccommodation}>Add Stay</Button>
                     </>
                 }
             >
@@ -612,7 +730,32 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                     </div>
                     <div>
                         <label className="text-sm font-medium mb-1 block">Address</label>
-                        <input type="text" className="input" placeholder="Location" value={accommodationForm.address} onChange={e => setAccommodationForm({ ...accommodationForm, address: e.target.value })} />
+                        <AddressSearchInput
+                            placeholder="Search for address..."
+                            onSelectLocation={(result) => {
+                                setAccommodationForm({
+                                    ...accommodationForm,
+                                    address: result.display_name,
+                                    latitude: result.latitude,
+                                    longitude: result.longitude
+                                });
+                            }}
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium mb-1 block">Location on Map (optional)</label>
+                        <LocationPicker
+                            initialLatitude={accommodationForm.latitude || 40.7128}
+                            initialLongitude={accommodationForm.longitude || -74.006}
+                            onLocationChange={(lat, lng, address) => {
+                                setAccommodationForm({
+                                    ...accommodationForm,
+                                    latitude: lat,
+                                    longitude: lng,
+                                    address: address || accommodationForm.address
+                                });
+                            }}
+                        />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -637,8 +780,8 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                 title="Add Transport"
                 footer={
                     <>
-                        <button onClick={() => setActiveModal(null)} className="btn btn-outline">Cancel</button>
-                        <button onClick={handleSaveTransport} className="btn btn-primary">Add Transport</button>
+                        <Button variant="outline" onClick={() => setActiveModal(null)}>Cancel</Button>
+                        <Button onClick={handleSaveTransport}>Add Transport</Button>
                     </>
                 }
             >
@@ -665,11 +808,31 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="text-sm font-medium mb-1 block">From</label>
-                            <input type="text" className="input" placeholder="Origin" value={transportForm.from} onChange={e => setTransportForm({ ...transportForm, from: e.target.value })} />
+                            <AddressSearchInput
+                                placeholder="Search origin location..."
+                                onSelectLocation={(result) => {
+                                    setTransportForm({
+                                        ...transportForm,
+                                        from: result.display_name,
+                                        departure_latitude: result.latitude,
+                                        departure_longitude: result.longitude
+                                    });
+                                }}
+                            />
                         </div>
                         <div>
                             <label className="text-sm font-medium mb-1 block">To</label>
-                            <input type="text" className="input" placeholder="Destination" value={transportForm.to} onChange={e => setTransportForm({ ...transportForm, to: e.target.value })} />
+                            <AddressSearchInput
+                                placeholder="Search destination..."
+                                onSelectLocation={(result) => {
+                                    setTransportForm({
+                                        ...transportForm,
+                                        to: result.display_name,
+                                        arrival_latitude: result.latitude,
+                                        arrival_longitude: result.longitude
+                                    });
+                                }}
+                            />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">

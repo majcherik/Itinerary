@@ -23,7 +23,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer 
         // This ensures it sits on top of all other content and escapes any stacking contexts
         return createPortal(
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] animate-fade-in p-4 sm:p-6">
-                <div className="card w-full max-w-md p-6 flex flex-col gap-4 relative max-h-[85vh] overflow-y-auto shadow-2xl">
+                <div className="card w-full max-w-[calc(100vw-2rem)] md:max-w-md p-6 flex flex-col gap-4 relative max-h-[85vh] overflow-y-auto shadow-2xl">
                     <button
                         onClick={onClose}
                         className="absolute top-4 right-4 text-text-secondary hover:text-text-primary transition-colors"

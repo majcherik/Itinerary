@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Home, Wallet, CheckSquare, FileText, LogOut } from 'lucide-react';
+import { Home, Wallet, CheckSquare, FileText, Map, LogOut } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@itinerary/shared';
 import { cn } from '@/lib/utils';
@@ -37,6 +37,12 @@ export default function MenuDockResponsive() {
             alwaysEnabled: false
         },
         {
+            label: 'Map',
+            icon: Map,
+            onClick: () => id && router.push(`/trip/${id}/map`),
+            alwaysEnabled: false
+        },
+        {
             label: 'Logout',
             icon: LogOut,
             onClick: () => signOut(),
@@ -50,11 +56,12 @@ export default function MenuDockResponsive() {
         if (index === 1 && pathname.includes('/wallet')) return true;
         if (index === 2 && pathname.includes('/packing')) return true;
         if (index === 3 && pathname.includes('/docs')) return true;
+        if (index === 4 && pathname.includes('/map')) return true;
         return false;
     };
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 flex justify-center w-full p-3 bg-gradient-to-b from-black/5 to-transparent backdrop-blur-sm z-[99999] pointer-events-none">
+        <div className="fixed bottom-0 left-0 right-0 flex justify-center w-full p-3 bg-gradient-to-b from-black/5 to-transparent backdrop-blur-sm z-50 pointer-events-none">
             <nav className="bg-gradient-to-r from-gray-900/95 via-gray-800/95 to-gray-900/95 rounded-full px-3 sm:px-5 py-1.5 sm:py-2 shadow-[0_0_15px_rgba(0,0,0,0.2)] border border-yellow-300/20 backdrop-blur-md transform hover:scale-[1.02] transition-all duration-300 max-w-[95%] sm:max-w-[450px] pointer-events-auto">
                 <div className="flex items-center justify-center space-x-2 sm:space-x-6">
                     {menuItems.map((item, index) => {

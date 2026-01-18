@@ -30,7 +30,6 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ onCurrencyChange,
             setRates(data.rates);
             setLastUpdated(data.lastUpdated);
         } catch (err) {
-            console.error('Error fetching currency data:', err);
             setError('Failed to load exchange rates');
         } finally {
             setLoading(false);

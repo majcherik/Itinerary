@@ -267,7 +267,10 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                     activity: item.title,
                     notes: item.description,
                     cost: item.cost,
-                    time: item.time || null
+                    time: item.time || null,
+                    latitude: item.latitude || null,
+                    longitude: item.longitude || null,
+                    location_name: item.location_name || null
                 }] as any)
                 .select()
                 .single();
@@ -296,7 +299,9 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                     check_in: item.checkIn,
                     check_out: item.checkOut,
                     notes: `Type: ${item.type}. ${item.notes || ''}`,
-                    cost: item.cost
+                    cost: item.cost,
+                    latitude: item.latitude || null,
+                    longitude: item.longitude || null
                 }] as any)
                 .select()
                 .single();
@@ -326,7 +331,11 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                     arrival_location: item.to,
                     departure_time: item.depart,
                     arrival_time: item.arrive,
-                    cost: item.cost
+                    cost: item.cost,
+                    departure_latitude: item.departure_latitude || null,
+                    departure_longitude: item.departure_longitude || null,
+                    arrival_latitude: item.arrival_latitude || null,
+                    arrival_longitude: item.arrival_longitude || null
                 }] as any)
                 .select()
                 .single();

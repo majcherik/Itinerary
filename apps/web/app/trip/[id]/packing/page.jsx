@@ -23,11 +23,10 @@ import {
     PopoverTrigger,
 } from "../../../../src/components/ui/popover"
 import ProtectedRoute from '../../../../src/components/ProtectedRoute';
-import Layout from '../../../../src/components/Layout';
-import MenuDockResponsive from '../../../../src/components/MenuDockResponsive';
-import Footer from '../../../../src/components/Footer';
+import { SidebarLayout } from '../../../../src/components/SidebarLayout';
 import AnimatedCheckbox from '../../../../src/components/AnimatedCheckbox';
 import AnimatedDeleteButton from '../../../../src/components/AnimatedDeleteButton';
+import Breadcrumbs from '../../../../src/components/Breadcrumbs';
 
 import { useOnClickOutside } from '@itinerary/shared';
 
@@ -85,6 +84,9 @@ const PackingListContent = () => {
 
     return (
         <div className="flex flex-col gap-6">
+            {/* Breadcrumbs */}
+            <Breadcrumbs items={[{ label: trip.title, href: `/trip/${id}` }, { label: 'Packing List' }]} />
+
             <div className="flex justify-between items-end">
                 <div>
                     <h2 className="text-2xl font-bold">Packing List</h2>
@@ -275,11 +277,9 @@ const PackingListContent = () => {
 export default function PackingListPage() {
     return (
         <ProtectedRoute>
-            <Layout>
+            <SidebarLayout>
                 <PackingListContent />
-                <Footer />
-            </Layout>
-            <MenuDockResponsive />
+            </SidebarLayout>
         </ProtectedRoute>
     );
 }

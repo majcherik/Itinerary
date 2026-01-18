@@ -4,6 +4,7 @@ import Link from 'next/link';
 // Cast Link to any to avoid "cannot be used as a JSX component" error
 const LinkAny = Link as any;
 import { usePathname } from 'next/navigation';
+import { UserMenu } from './UserMenu';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -21,7 +22,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             TripPlanner
                         </h1>
                     </LinkAny>
-                    <div className="w-8 h-8 rounded-full bg-bg-card border border-border-color"></div>
+                    <UserMenu />
                 </div>
             </header>
             <main className="container max-w-5xl mx-auto px-4 animate-fade-in">

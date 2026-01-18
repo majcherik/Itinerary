@@ -7,9 +7,8 @@ import { useParams } from 'next/navigation';
 import { useTrip } from '@itinerary/shared';
 
 import ProtectedRoute from '../../../../src/components/ProtectedRoute';
-import Layout from '../../../../src/components/Layout';
-import MenuDockResponsive from '../../../../src/components/MenuDockResponsive';
-import Footer from '../../../../src/components/Footer';
+import { SidebarLayout } from '../../../../src/components/SidebarLayout';
+import Breadcrumbs from '../../../../src/components/Breadcrumbs';
 
 const VisaSection = ({ trip, updateTrip }) => {
     const [visaInfo, setVisaInfo] = React.useState(trip.visa_info || '');
@@ -187,6 +186,9 @@ const DocumentsContent = () => {
 
     return (
         <div className="flex flex-col gap-6">
+            {/* Breadcrumbs */}
+            <Breadcrumbs items={[{ label: trip.title, href: `/trip/${id}` }, { label: 'Documents' }]} />
+
             <h2 className="text-2xl font-bold">Documents & Info</h2>
             <Tabs tabs={tabs} />
         </div>
@@ -196,11 +198,9 @@ const DocumentsContent = () => {
 export default function DocumentsPage() {
     return (
         <ProtectedRoute>
-            <Layout>
+            <SidebarLayout>
                 <DocumentsContent />
-                <Footer />
-            </Layout>
-            <MenuDockResponsive />
+            </SidebarLayout>
         </ProtectedRoute>
     );
 }

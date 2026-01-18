@@ -18,38 +18,38 @@ module.exports = {
         },
         extend: {
             colors: {
-                border: 'var(--border-color)',
-                input: 'var(--border-color)',
-                ring: 'var(--accent-primary)',
-                background: 'var(--bg-primary)',
-                foreground: 'var(--text-primary)',
+                border: "var(--border)",
+                input: "var(--input)",
+                ring: "var(--ring)",
+                background: "var(--background)",
+                foreground: "var(--foreground)",
                 primary: {
-                    DEFAULT: 'var(--accent-primary)',
-                    foreground: '#ffffff',
+                    DEFAULT: "var(--primary)",
+                    foreground: "var(--primary-foreground)",
                 },
                 secondary: {
-                    DEFAULT: 'var(--bg-secondary)',
-                    foreground: 'var(--text-primary)',
+                    DEFAULT: "var(--secondary)",
+                    foreground: "var(--secondary-foreground)",
                 },
                 destructive: {
-                    DEFAULT: 'var(--danger)',
-                    foreground: '#ffffff',
+                    DEFAULT: "var(--destructive)",
+                    foreground: "var(--destructive-foreground)",
                 },
                 muted: {
-                    DEFAULT: 'var(--bg-secondary)',
-                    foreground: 'var(--text-secondary)',
+                    DEFAULT: "var(--muted)",
+                    foreground: "var(--muted-foreground)",
                 },
                 accent: {
-                    DEFAULT: 'var(--accent-secondary)',
-                    foreground: '#ffffff',
+                    DEFAULT: "var(--accent)",
+                    foreground: "var(--accent-foreground)",
                 },
                 popover: {
-                    DEFAULT: 'var(--bg-card)',
-                    foreground: 'var(--text-primary)',
+                    DEFAULT: "var(--popover)",
+                    foreground: "var(--popover-foreground)",
                 },
                 card: {
-                    DEFAULT: 'var(--bg-card)',
-                    foreground: 'var(--text-primary)',
+                    DEFAULT: "var(--card)",
+                    foreground: "var(--card-foreground)",
                 },
                 // Manual theme fallbacks
                 'accent-primary': 'var(--accent-primary)',
@@ -57,7 +57,7 @@ module.exports = {
                 success: 'var(--success)',
                 warning: 'var(--warning)',
                 danger: 'var(--danger)',
-                'bg-primary': 'var(--bg-primary)', // For backward compat if needed
+                'bg-primary': 'var(--bg-primary)',
                 'bg-secondary': 'var(--bg-secondary)',
                 'bg-card': 'var(--bg-card)',
             },

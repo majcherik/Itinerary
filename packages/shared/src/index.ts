@@ -11,8 +11,12 @@ export * from './hooks/use-on-click-outside';
 export * from './hooks/use-scroll-lock';
 
 export * from './schemas/expenses';
+export * from './schemas/profile';
 export * from './hooks/use-trips';
 export * from './hooks/use-expenses';
+export * from './hooks/use-profile';
+export * from './hooks/use-preferences';
+export * from './hooks/use-account';
 export * from './lib/database.types';
 export * from './lib/constants';
 export * from './lib/utils';

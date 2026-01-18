@@ -1,18 +1,15 @@
 'use client';
 
 import Dashboard from '../src/views/Dashboard';
-import Layout from '../src/components/Layout';
 import ProtectedRoute from '../src/components/ProtectedRoute';
-import MenuDockResponsive from '../src/components/MenuDockResponsive';
+import { SidebarLayout } from '../src/components/SidebarLayout';
 
 export default function Page() {
     return (
         <ProtectedRoute>
-            <Layout>
+            <SidebarLayout>
                 <Dashboard />
-                {/* <div>Dashboard Placeholder</div> */}
-            </Layout>
-            <MenuDockResponsive />
+            </SidebarLayout>
         </ProtectedRoute>
     );
 }

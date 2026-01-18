@@ -7,10 +7,9 @@ import { useTrip, useCopyToClipboard } from '@itinerary/shared';
 import QRCode from 'react-qr-code';
 import Modal from '../../../../src/components/Modal';
 import ProtectedRoute from '../../../../src/components/ProtectedRoute';
-import Layout from '../../../../src/components/Layout';
+import { SidebarLayout } from '../../../../src/components/SidebarLayout';
 import AnimatedDeleteButton from '../../../../src/components/AnimatedDeleteButton';
-import MenuDockResponsive from '../../../../src/components/MenuDockResponsive';
-import Footer from '../../../../src/components/Footer';
+import Breadcrumbs from '../../../../src/components/Breadcrumbs';
 
 const WalletContent = () => {
     const { id } = useParams();
@@ -58,6 +57,9 @@ const WalletContent = () => {
 
     return (
         <div className="flex flex-col gap-6">
+            {/* Breadcrumbs */}
+            <Breadcrumbs items={[{ label: trip.title, href: `/trip/${id}` }, { label: 'Wallet' }]} />
+
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">My Wallet</h2>
                 <button onClick={() => setIsModalOpen(true)} className="btn btn-sm btn-primary flex items-center gap-2">
@@ -368,11 +370,9 @@ const WalletContent = () => {
 export default function WalletPage() {
     return (
         <ProtectedRoute>
-            <Layout>
+            <SidebarLayout>
                 <WalletContent />
-                <Footer />
-            </Layout>
-            <MenuDockResponsive />
+            </SidebarLayout>
         </ProtectedRoute>
     );
 }

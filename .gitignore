@@ -30,3 +30,9 @@ yarn-error.log*
 
 # Vercel
 .vercel
+
+# Supabase
+supabase/.temp
+
+# Build logs
+build*.log
