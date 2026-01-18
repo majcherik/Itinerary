@@ -41,7 +41,7 @@ export function useDeleteExpense() {
             const { error } = await supabase
                 .from('expenses')
                 .delete()
-                .eq('id', expenseId);
+                .eq('id', Number(expenseId));
 
             if (error) throw error;
         },
