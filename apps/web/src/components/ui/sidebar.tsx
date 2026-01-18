@@ -259,7 +259,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>((
 }) as React.ForwardRefExoticComponent<SidebarProps & React.RefAttributes<HTMLDivElement>>
 Sidebar.displayName = "Sidebar"
 
-const SidebarTrigger = React.forwardRef(({ className, onClick, ...props }, ref) => {
+const SidebarTrigger = React.forwardRef<HTMLButtonElement, React.ComponentPropsWithoutRef<typeof Button>>(({ className, onClick, ...props }, ref) => {
   const { toggleSidebar } = useSidebar()
 
   return (
@@ -278,7 +278,7 @@ const SidebarTrigger = React.forwardRef(({ className, onClick, ...props }, ref) 
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );
-})
+}) as React.ForwardRefExoticComponent<React.ComponentPropsWithoutRef<typeof Button> & React.RefAttributes<HTMLButtonElement>>
 SidebarTrigger.displayName = "SidebarTrigger"
 
 const SidebarRail = React.forwardRef(({ className, ...props }, ref) => {
