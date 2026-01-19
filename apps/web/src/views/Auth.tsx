@@ -141,6 +141,25 @@ const Auth: React.FC = () => {
                             )}
                         </Button>
                     </form>
+                    {isLogin && (
+                        <div className="text-center">
+                            <button
+                                type="button"
+                                className="text-sm text-accent-primary hover:underline font-medium"
+                                onClick={() => setShowForgotPassword(true)}
+                            >
+                                Forgot your password?
+                            </button>
+                        </div>
+                    )}
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                        </div>
+                    </div>
                     <Button variant="outline" className="w-full" onClick={handleGoogleLogin} type="button">
                         Login with Google
                     </Button>
