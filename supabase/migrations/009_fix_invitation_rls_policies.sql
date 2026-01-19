@@ -7,28 +7,46 @@
 -- ============================================================================
 
 -- ============================================================================
--- 1. ALLOW USERS TO ACCEPT INVITATIONS
+-- 1. CREATE HELPER FUNCTION TO AVOID RECURSION
+-- ============================================================================
+
+-- Function to check if user has a valid invitation for a trip
+CREATE OR REPLACE FUNCTION user_has_valid_invitation(trip_id_param BIGINT)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    has_invitation BOOLEAN;
+BEGIN
+    SELECT EXISTS (
+        SELECT 1 FROM trip_invitations
+        JOIN profiles ON profiles.id = auth.uid()
+        WHERE trip_invitations.trip_id = trip_id_param
+        AND trip_invitations.email = profiles.email
+        AND trip_invitations.status = 'pending'
+        AND trip_invitations.expires_at > NOW()
+    ) INTO has_invitation;
+
+    RETURN COALESCE(has_invitation, false);
+END;
+$$;
+
+-- ============================================================================
+-- 2. ALLOW USERS TO ACCEPT INVITATIONS
 -- ============================================================================
 
 -- Allow users to insert themselves as collaborators when accepting invitations
 CREATE POLICY "Users can accept invitations" ON trip_collaborators
 FOR INSERT
 WITH CHECK (
-    -- User is inserting themselves
     user_id = auth.uid()
-    -- AND there's a pending invitation for them
-    AND EXISTS (
-        SELECT 1 FROM trip_invitations
-        JOIN profiles ON profiles.id = auth.uid()
-        WHERE trip_invitations.trip_id = trip_collaborators.trip_id
-        AND trip_invitations.email = profiles.email
-        AND trip_invitations.status = 'pending'
-        AND trip_invitations.expires_at > NOW()
-    )
+    AND user_has_valid_invitation(trip_id)
 );
 
 -- ============================================================================
--- 2. ALLOW USERS TO RESPOND TO INVITATIONS (DECLINE)
+-- 3. ALLOW USERS TO RESPOND TO INVITATIONS (DECLINE)
 -- ============================================================================
 
 -- Allow users to update invitations sent to their email (for declining)
