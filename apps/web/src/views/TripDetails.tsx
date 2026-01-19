@@ -195,23 +195,28 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
         setItineraryForm({ day: '', date: '', description: '', items: [{ title: '', cost: '' }], latitude: undefined, longitude: undefined, locationName: '' });
     };
 
-    const handleAddItemRow = () => {
-        setItineraryForm({
-            ...itineraryForm,
-            items: [...itineraryForm.items, { title: '', cost: '' }]
-        });
-    };
+    const handleAddItemRow = React.useCallback(() => {
+        setItineraryForm(curr => ({
+            ...curr,
+            items: [...curr.items, { title: '', cost: '' }]
+        }));
+    }, []); // No dependencies needed with functional update
 
-    const handleRemoveItemRow = (index: number) => {
-        const newItems = itineraryForm.items.filter((_, i) => i !== index);
-        setItineraryForm({ ...itineraryForm, items: newItems });
-    };
+    const handleRemoveItemRow = React.useCallback((index: number) => {
+        setItineraryForm(curr => ({
+            ...curr,
+            items: curr.items.filter((_, i) => i !== index)
+        }));
+    }, []); // No dependencies needed with functional update
 
-    const handleItemChange = (index: number, field: keyof { title: string; cost: string }, value: string) => {
-        const newItems = [...itineraryForm.items];
-        newItems[index][field] = value;
-        setItineraryForm({ ...itineraryForm, items: newItems });
-    };
+    const handleItemChange = React.useCallback((index: number, field: keyof { title: string; cost: string }, value: string) => {
+        setItineraryForm(curr => ({
+            ...curr,
+            items: curr.items.map((item, i) =>
+                i === index ? { ...item, [field]: value } : item
+            )
+        }));
+    }, []); // No dependencies needed with functional update
 
     const handleSaveAccommodation = () => {
         if (!accommodationForm.name) return;
@@ -627,17 +632,17 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="text-sm font-medium mb-1 block">Day Number</label>
-                            <input type="number" className="input" placeholder="e.g. 1" value={itineraryForm.day} onChange={e => setItineraryForm({ ...itineraryForm, day: e.target.value })} />
+                            <input type="number" className="input" placeholder="e.g. 1" value={itineraryForm.day} onChange={e => setItineraryForm(curr => ({ ...curr, day: e.target.value }))} />
                         </div>
                         <div>
                             <label className="text-sm font-medium mb-1 block">Date</label>
-                            <input type="date" className="input" value={itineraryForm.date} onChange={e => setItineraryForm({ ...itineraryForm, date: e.target.value })} />
+                            <input type="date" className="input" value={itineraryForm.date} onChange={e => setItineraryForm(curr => ({ ...curr, date: e.target.value }))} />
                         </div>
                     </div>
 
                     <div>
                         <label className="text-sm font-medium mb-1 block">Description (Optional)</label>
-                        <textarea className="input min-h-[60px]" placeholder="General notes for the day..." value={itineraryForm.description} onChange={e => setItineraryForm({ ...itineraryForm, description: e.target.value })} />
+                        <textarea className="input min-h-[60px]" placeholder="General notes for the day..." value={itineraryForm.description} onChange={e => setItineraryForm(curr => ({ ...curr, description: e.target.value }))} />
                     </div>
 
                     <div>
@@ -645,12 +650,12 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                         <AddressSearchInput
                             placeholder="Search for location..."
                             onSelectLocation={(result) => {
-                                setItineraryForm({
-                                    ...itineraryForm,
+                                setItineraryForm(curr => ({
+                                    ...curr,
                                     locationName: result.display_name,
                                     latitude: result.latitude,
                                     longitude: result.longitude
-                                });
+                                }));
                             }}
                         />
                     </div>
@@ -661,12 +666,12 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                             initialLatitude={itineraryForm.latitude || 40.7128}
                             initialLongitude={itineraryForm.longitude || -74.006}
                             onLocationChange={(lat, lng, address) => {
-                                setItineraryForm({
-                                    ...itineraryForm,
+                                setItineraryForm(curr => ({
+                                    ...curr,
                                     latitude: lat,
                                     longitude: lng,
-                                    locationName: address || itineraryForm.locationName || ''
-                                });
+                                    locationName: address || curr.locationName || ''
+                                }));
                             }}
                         />
                     </div>
@@ -723,11 +728,11 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                 <div className="flex flex-col gap-3">
                     <div>
                         <label className="text-sm font-medium mb-1 block">Name</label>
-                        <input type="text" className="input" placeholder="Hotel Name" value={accommodationForm.name} onChange={e => setAccommodationForm({ ...accommodationForm, name: e.target.value })} />
+                        <input type="text" className="input" placeholder="Hotel Name" value={accommodationForm.name} onChange={e => setAccommodationForm(curr => ({ ...curr, name: e.target.value }))} />
                     </div>
                     <div>
                         <label className="text-sm font-medium mb-1 block">Type</label>
-                        <select className="input" value={accommodationForm.type} onChange={e => setAccommodationForm({ ...accommodationForm, type: e.target.value })}>
+                        <select className="input" value={accommodationForm.type} onChange={e => setAccommodationForm(curr => ({ ...curr, type: e.target.value }))}>
                             <option value="Hotel">Hotel</option>
                             <option value="Airbnb">Airbnb</option>
                             <option value="Hostel">Hostel</option>
@@ -739,12 +744,12 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                         <AddressSearchInput
                             placeholder="Search for address..."
                             onSelectLocation={(result) => {
-                                setAccommodationForm({
-                                    ...accommodationForm,
+                                setAccommodationForm(curr => ({
+                                    ...curr,
                                     address: result.display_name,
                                     latitude: result.latitude,
                                     longitude: result.longitude
-                                });
+                                }));
                             }}
                         />
                     </div>
@@ -754,28 +759,28 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                             initialLatitude={accommodationForm.latitude || 40.7128}
                             initialLongitude={accommodationForm.longitude || -74.006}
                             onLocationChange={(lat, lng, address) => {
-                                setAccommodationForm({
-                                    ...accommodationForm,
+                                setAccommodationForm(curr => ({
+                                    ...curr,
                                     latitude: lat,
                                     longitude: lng,
-                                    address: address || accommodationForm.address
-                                });
+                                    address: address || curr.address
+                                }));
                             }}
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="text-sm font-medium mb-1 block">Check-in</label>
-                            <input type="date" className="input" value={accommodationForm.checkIn} onChange={e => setAccommodationForm({ ...accommodationForm, checkIn: e.target.value })} />
+                            <input type="date" className="input" value={accommodationForm.checkIn} onChange={e => setAccommodationForm(curr => ({ ...curr, checkIn: e.target.value }))} />
                         </div>
                         <div>
                             <label className="text-sm font-medium mb-1 block">Check-out</label>
-                            <input type="date" className="input" value={accommodationForm.checkOut} onChange={e => setAccommodationForm({ ...accommodationForm, checkOut: e.target.value })} />
+                            <input type="date" className="input" value={accommodationForm.checkOut} onChange={e => setAccommodationForm(curr => ({ ...curr, checkOut: e.target.value }))} />
                         </div>
                     </div>
                     <div>
                         <label className="text-sm font-medium mb-1 block">Cost ($)</label>
-                        <input type="number" className="input" placeholder="0.00" value={accommodationForm.cost} onChange={e => setAccommodationForm({ ...accommodationForm, cost: e.target.value })} />
+                        <input type="number" className="input" placeholder="0.00" value={accommodationForm.cost} onChange={e => setAccommodationForm(curr => ({ ...curr, cost: e.target.value }))} />
                     </div>
                 </div>
             </Modal>
@@ -795,7 +800,7 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="text-sm font-medium mb-1 block">Type</label>
-                            <select className="input" value={transportForm.type} onChange={e => setTransportForm({ ...transportForm, type: e.target.value })}>
+                            <select className="input" value={transportForm.type} onChange={e => setTransportForm(curr => ({ ...curr, type: e.target.value }))}>
                                 <option value="Flight">Flight</option>
                                 <option value="Train">Train</option>
                                 <option value="Bus">Bus</option>
@@ -808,7 +813,7 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                         </div>
                         <div>
                             <label className="text-sm font-medium mb-1 block">Number</label>
-                            <input type="text" className="input" placeholder="e.g. JL123" value={transportForm.number} onChange={e => setTransportForm({ ...transportForm, number: e.target.value })} />
+                            <input type="text" className="input" placeholder="e.g. JL123" value={transportForm.number} onChange={e => setTransportForm(curr => ({ ...curr, number: e.target.value }))} />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -817,12 +822,12 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                             <AddressSearchInput
                                 placeholder="Search origin location..."
                                 onSelectLocation={(result) => {
-                                    setTransportForm({
-                                        ...transportForm,
+                                    setTransportForm(curr => ({
+                                        ...curr,
                                         from: result.display_name,
                                         departure_latitude: result.latitude,
                                         departure_longitude: result.longitude
-                                    });
+                                    }));
                                 }}
                             />
                         </div>
@@ -831,12 +836,12 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                             <AddressSearchInput
                                 placeholder="Search destination..."
                                 onSelectLocation={(result) => {
-                                    setTransportForm({
-                                        ...transportForm,
+                                    setTransportForm(curr => ({
+                                        ...curr,
                                         to: result.display_name,
                                         arrival_latitude: result.latitude,
                                         arrival_longitude: result.longitude
-                                    });
+                                    }));
                                 }}
                             />
                         </div>
@@ -844,16 +849,16 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="text-sm font-medium mb-1 block">Depart</label>
-                            <input type="datetime-local" className="input" value={transportForm.depart} onChange={e => setTransportForm({ ...transportForm, depart: e.target.value })} />
+                            <input type="datetime-local" className="input" value={transportForm.depart} onChange={e => setTransportForm(curr => ({ ...curr, depart: e.target.value }))} />
                         </div>
                         <div>
                             <label className="text-sm font-medium mb-1 block">Arrive</label>
-                            <input type="datetime-local" className="input" value={transportForm.arrive} onChange={e => setTransportForm({ ...transportForm, arrive: e.target.value })} />
+                            <input type="datetime-local" className="input" value={transportForm.arrive} onChange={e => setTransportForm(curr => ({ ...curr, arrive: e.target.value }))} />
                         </div>
                     </div>
                     <div>
                         <label className="text-sm font-medium mb-1 block">Cost ($)</label>
-                        <input type="number" className="input" placeholder="0.00" value={transportForm.cost} onChange={e => setTransportForm({ ...transportForm, cost: e.target.value })} />
+                        <input type="number" className="input" placeholder="0.00" value={transportForm.cost} onChange={e => setTransportForm(curr => ({ ...curr, cost: e.target.value }))} />
                     </div>
                 </div>
             </Modal>

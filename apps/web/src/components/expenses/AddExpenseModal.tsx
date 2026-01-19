@@ -209,7 +209,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ trip, onClose }) => {
                                             onClick={() => {
                                                 const custom = window.prompt("Enter new category name:");
                                                 if (custom) {
-                                                    setCategories([...categories, custom]);
+                                                    setCategories(curr => [...curr, custom]);
                                                     setValue('category', custom, { shouldValidate: true });
                                                     setOpenCategory(false);
                                                     setSearchCategory('');
