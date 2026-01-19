@@ -14,14 +14,16 @@ import {
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import SocialMediaLinks from '../components/SocialMediaLinks';
+import { GlassForgotPasswordCard } from '../components/GlassForgotPasswordCard';
 
 const Auth: React.FC = () => {
     const [isLogin, setIsLogin] = useState(true);
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { signIn, signUp, signInWithGoogle } = useAuth();
+    const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
     const router = useRouter();
     // usePathname doesn't return state, so we can't access location.state.from
     // We might need to use search params if we want to redirect back
@@ -59,6 +61,30 @@ const Auth: React.FC = () => {
         }
     };
 
+    const handlePasswordReset = async (email: string) => {
+        try {
+            const { error } = await resetPassword(email);
+            if (error) throw error;
+            toast.success('Password reset email sent! Check your inbox.');
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to send reset email');
+            throw error;
+        }
+    };
+
+    // Show forgot password card if user clicked the link
+    if (showForgotPassword) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-bg-primary p-4">
+                <GlassForgotPasswordCard
+                    onBackToSignIn={() => setShowForgotPassword(false)}
+                    onSubmit={handlePasswordReset}
+                />
+                <SocialMediaLinks />
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-bg-primary p-4">
             <Card className="w-full max-w-md">
@@ -92,10 +118,8 @@ const Auth: React.FC = () => {
                                 {isLogin && (
                                     <button
                                         type="button"
-                                        className="text-sm text-text-secondary opacity-50 cursor-not-allowed"
-                                        disabled
-                                        aria-disabled="true"
-                                        title="Password reset feature coming soon"
+                                        className="text-sm text-accent-primary hover:underline"
+                                        onClick={() => setShowForgotPassword(true)}
                                     >
                                         Forgot your password?
                                     </button>

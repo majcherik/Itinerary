@@ -10,12 +10,18 @@ import { useTrip, useDocumentTitle, useCountdown, Trip, formatDate } from '@itin
 import { Skeleton } from '../components/ui/skeleton';
 import { AspectRatio } from '../components/ui/aspect-ratio';
 import AnimatedDeleteButton from '../components/AnimatedDeleteButton';
+import InvitationList from '../components/InvitationList';
+import SharedTripBadge from '../components/SharedTripBadge';
 
 const Dashboard: React.FC = () => {
     useDocumentTitle('My Trips | TripPlanner');
     const { trips, loading, addTrip, deleteTrip, updateTrip } = useTrip();
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [editingTrip, setEditingTrip] = React.useState<Trip | null>(null);
+
+    // Group trips by ownership
+    const myTrips = React.useMemo(() => trips.filter(t => t.my_role === 'owner'), [trips]);
+    const sharedTrips = React.useMemo(() => trips.filter(t => t.my_role !== 'owner'), [trips]);
 
     // Find next upcoming trip
     const upcomingTrip = React.useMemo(() => {
@@ -107,12 +113,60 @@ const Dashboard: React.FC = () => {
         }
     };
 
+    // Helper function to render trip cards
+    const renderTripCard = (trip: Trip) => {
+        const dateString = `${formatDate(trip.start_date)} - ${formatDate(trip.end_date)}`;
+        const isShared = trip.my_role !== 'owner';
+
+        return (
+            <LinkAny href={`/trip/${trip.id}`} key={trip.id} className="card p-0 overflow-hidden hover:shadow-lg transition-all group relative">
+                {/* Action Buttons */}
+                <div className="absolute top-2 right-2 flex gap-2 z-10">
+                    {trip.my_role === 'owner' && (
+                        <>
+                            <button
+                                onClick={(e) => openEditModal(trip, e)}
+                                className="p-2 bg-white/90 rounded-full text-accent-primary hover:bg-accent-primary hover:text-white shadow-md transition-colors"
+                                title="Edit Trip"
+                            >
+                                <Edit2 size={18} />
+                            </button>
+                            <div className="p-2 bg-white/90 rounded-full shadow-md">
+                                <AnimatedDeleteButton
+                                    onClick={(e) => handleDeleteTrip(trip.id, e)}
+                                />
+                            </div>
+                        </>
+                    )}
+                </div>
+
+                <AspectRatio ratio={16 / 9} className="bg-muted">
+                    <img src={trip.hero_image || trip.image} alt={trip.title} className="w-full h-full object-cover rounded-t-lg" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                </AspectRatio>
+                <div className="p-4">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                        <h3 className="text-xl font-bold text-text-primary flex-1">{trip.title}</h3>
+                        {isShared && <SharedTripBadge role={trip.my_role as 'editor' | 'viewer'} size="sm" />}
+                    </div>
+                    <div className="flex items-center gap-2 text-text-secondary text-sm">
+                        <Calendar size={16} />
+                        <span>{dateString}</span>
+                    </div>
+                </div>
+            </LinkAny>
+        );
+    };
+
     return (
         <div className="flex flex-col gap-6">
+            {/* Invitations */}
+            <InvitationList />
+
             <div className="flex justify-between items-end">
                 <div>
                     <div className="flex items-center gap-3 mb-2">
-                        <h2 className="text-2xl font-bold text-foreground">My Trips</h2>
+                        <h2 className="text-2xl font-bold text-foreground">Dashboard</h2>
                         <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">Beta</span>
                     </div>
                     <p className="text-text-secondary">Manage your upcoming adventures</p>
@@ -161,43 +215,34 @@ const Dashboard: React.FC = () => {
                     ))}
                 </div>
             ) : (
-                <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                    {trips.map((trip) => {
-                        const dateString = `${formatDate(trip.start_date)} - ${formatDate(trip.end_date)}`;
+                <>
+                    {/* My Trips Section */}
+                    {myTrips.length > 0 && (
+                        <div>
+                            <h3 className="text-xl font-bold mb-4 text-text-primary">My Trips</h3>
+                            <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                                {myTrips.map((trip) => renderTripCard(trip))}
+                            </div>
+                        </div>
+                    )}
 
-                        return (
-                            <LinkAny href={`/trip/${trip.id}`} key={trip.id} className="card p-0 overflow-hidden hover:shadow-lg transition-all group relative">
-                                {/* Action Buttons */}
-                                <div className="absolute top-2 right-2 flex gap-2 z-10">
-                                    <button
-                                        onClick={(e) => openEditModal(trip, e)}
-                                        className="p-2 bg-white/90 rounded-full text-accent-primary hover:bg-accent-primary hover:text-white shadow-md transition-colors"
-                                        title="Edit Trip"
-                                    >
-                                        <Edit2 size={18} />
-                                    </button>
-                                    <div className="p-2 bg-white/90 rounded-full shadow-md">
-                                        <AnimatedDeleteButton
-                                            onClick={(e) => handleDeleteTrip(trip.id, e)}
-                                        />
-                                    </div>
-                                </div>
+                    {/* Shared With Me Section */}
+                    {sharedTrips.length > 0 && (
+                        <div className={myTrips.length > 0 ? 'mt-8' : ''}>
+                            <h3 className="text-xl font-bold mb-4 text-text-primary">Shared With Me</h3>
+                            <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                                {sharedTrips.map((trip) => renderTripCard(trip))}
+                            </div>
+                        </div>
+                    )}
 
-                                <AspectRatio ratio={16 / 9} className="bg-muted">
-                                    <img src={trip.hero_image || trip.image} alt={trip.title} className="w-full h-full object-cover rounded-t-lg" />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                                </AspectRatio>
-                                <div className="p-4">
-                                    <h3 className="text-xl font-bold mb-2 text-text-primary">{trip.title}</h3>
-                                    <div className="flex items-center gap-2 text-text-secondary text-sm">
-                                        <Calendar size={16} />
-                                        <span>{dateString}</span>
-                                    </div>
-                                </div>
-                            </LinkAny>
-                        );
-                    })}
-                </div>
+                    {/* Empty State */}
+                    {myTrips.length === 0 && sharedTrips.length === 0 && (
+                        <div className="text-center py-12 text-text-secondary">
+                            <p>No trips yet. Click "New Trip" to create your first adventure!</p>
+                        </div>
+                    )}
+                </>
             )}
 
             {isModalOpen && (

@@ -17,6 +17,7 @@ export * from './hooks/use-expenses';
 export * from './hooks/use-profile';
 export * from './hooks/use-preferences';
 export * from './hooks/use-account';
+export * from './hooks/use-collaborators';
 export * from './lib/database.types';
 export * from './lib/constants';
 export * from './lib/utils';

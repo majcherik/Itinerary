@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Trip, createExpenseSchema, CreateExpenseInput, useAddExpense } from '@itinerary/shared';
+import { Trip, createExpenseSchema, CreateExpenseInput, useAddExpense, useCollaborators, useAuth } from '@itinerary/shared';
 import { toast } from 'sonner';
 import { Check, ChevronsUpDown, Plus, Users, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { z } from 'zod';
 
 interface AddExpenseModalProps {
     trip: Trip;
@@ -12,7 +13,8 @@ interface AddExpenseModalProps {
 }
 
 const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ trip, onClose }) => {
-    const members = trip.members || ['Me'];
+    const { user } = useAuth();
+    const { data: collaborators, isLoading: loadingCollaborators } = useCollaborators(trip.id);
     const { mutateAsync: addExpense, isPending } = useAddExpense();
 
     // Default categories
@@ -21,34 +23,61 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ trip, onClose }) => {
     const [openCategory, setOpenCategory] = useState(false);
     const [searchCategory, setSearchCategory] = useState('');
 
-    const form = useForm<CreateExpenseInput>({
-        resolver: zodResolver(createExpenseSchema(members)) as any,
+    // Create user ID to name mapping
+    const collaboratorsList = collaborators || [];
+    const userIdToName = React.useMemo(() => {
+        const map: Record<string, string> = {};
+        collaboratorsList.forEach(collab => {
+            map[collab.user.id] = collab.user.display_name || collab.user.email || 'Unknown';
+        });
+        return map;
+    }, [collaboratorsList]);
+
+    // Get all user IDs for split with
+    const allUserIds = collaboratorsList.map(c => c.user.id);
+    const currentUserId = user?.id || '';
+
+    // Updated schema for user IDs
+    const expenseSchemaWithUserIds = z.object({
+        description: z.string().min(1, 'Description is required'),
+        amount: z.number().min(0.01, 'Amount must be greater than 0'),
+        date: z.string(),
+        category: z.string().min(1, 'Category is required'),
+        payerUserId: z.string().min(1, 'Payer is required'),
+        splitWithUserIds: z.array(z.string()).min(1, 'Must split with at least one person'),
+    });
+
+    type ExpenseFormData = z.infer<typeof expenseSchemaWithUserIds>;
+
+    const form = useForm<ExpenseFormData>({
+        resolver: zodResolver(expenseSchemaWithUserIds) as any,
         defaultValues: {
             description: '',
             amount: 0,
             date: new Date().toISOString().split('T')[0],
             category: '',
-            payer: 'Me',
-            splitWith: members,
+            payerUserId: currentUserId,
+            splitWithUserIds: allUserIds,
         }
     });
 
     const { register, handleSubmit, setValue, watch, formState: { errors } } = form;
-    const splitWith = watch('splitWith');
+    const splitWithUserIds = watch('splitWithUserIds');
     const categoryValue = watch('category');
-    const payerValue = watch('payer');
-    const isAllSelected = splitWith.length === members.length;
+    const payerUserId = watch('payerUserId');
+    const isAllSelected = splitWithUserIds.length === allUserIds.length;
 
-    const onSubmit = async (data: CreateExpenseInput) => {
+    const onSubmit = async (data: ExpenseFormData) => {
         try {
             await addExpense({
-                tripId: trip.id, expense: {
+                tripId: trip.id,
+                expense: {
                     description: data.description,
                     amount: Number(data.amount),
                     date: data.date,
                     category: data.category,
-                    payer: data.payer,
-                    split_with: data.splitWith  // Map camelCase to snake_case
+                    payer_user_id: data.payerUserId,
+                    split_with_user_ids: data.splitWithUserIds,
                 } as any
             });
             toast.success('Expense added');
@@ -58,29 +87,36 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ trip, onClose }) => {
         }
     };
 
-    const toggleSplitMember = (member: string) => {
-        const current = splitWith;
-        if (current.includes(member)) {
-            // Validate length > 1 handled by schema, but good for UX to prevent deselecting last one here too or just let schema handle error
+    const toggleSplitMember = (userId: string) => {
+        const current = splitWithUserIds;
+        if (current.includes(userId)) {
             if (current.length > 1) {
-                setValue('splitWith', current.filter(m => m !== member), { shouldValidate: true });
+                setValue('splitWithUserIds', current.filter(id => id !== userId), { shouldValidate: true });
             } else {
                 toast.error("Expense must be split with at least one person");
             }
         } else {
-            setValue('splitWith', [...current, member], { shouldValidate: true });
+            setValue('splitWithUserIds', [...current, userId], { shouldValidate: true });
         }
     };
 
     const toggleSelectAll = () => {
         if (isAllSelected) {
-            // Keep payer selected to avoid empty state, or just empty and let validation catch it
-            const keep = members.includes(payerValue) ? [payerValue] : [members[0]];
-            setValue('splitWith', keep, { shouldValidate: true });
+            const keep = allUserIds.includes(payerUserId) ? [payerUserId] : [allUserIds[0]];
+            setValue('splitWithUserIds', keep, { shouldValidate: true });
         } else {
-            setValue('splitWith', members, { shouldValidate: true });
+            setValue('splitWithUserIds', allUserIds, { shouldValidate: true });
         }
     };
+
+    // Show loading state while fetching collaborators
+    if (loadingCollaborators || !collaborators) {
+        return (
+            <div className="flex items-center justify-center py-12">
+                <Loader2 className="animate-spin" size={32} />
+            </div>
+        );
+    }
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
@@ -230,11 +266,13 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ trip, onClose }) => {
                 <div>
                     <label className="text-sm font-medium mb-1.5 block text-text-secondary">Paid By</label>
                     <select
-                        {...register('payer')}
+                        {...register('payerUserId')}
                         className="input w-full"
                     >
-                        {members.map(member => (
-                            <option key={member} value={member}>{member}</option>
+                        {collaboratorsList.map(collab => (
+                            <option key={collab.user.id} value={collab.user.id}>
+                                {collab.user.display_name || collab.user.email}
+                            </option>
                         ))}
                     </select>
                 </div>
@@ -254,13 +292,13 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ trip, onClose }) => {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                    {members.map(member => {
-                        const isSelected = splitWith.includes(member);
+                    {collaboratorsList.map(collab => {
+                        const isSelected = splitWithUserIds.includes(collab.user.id);
                         return (
                             <button
-                                key={member}
+                                key={collab.user.id}
                                 type="button"
-                                onClick={() => toggleSplitMember(member)}
+                                onClick={() => toggleSplitMember(collab.user.id)}
                                 className={cn(
                                     "px-4 py-2 rounded-xl text-sm border transition-all duration-200 flex items-center gap-2",
                                     isSelected
@@ -269,14 +307,14 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ trip, onClose }) => {
                                 )}
                             >
                                 {isSelected && <Check size={14} />}
-                                {member}
+                                {collab.user.display_name || collab.user.email}
                             </button>
                         );
                     })}
                 </div>
-                {errors.splitWith && <p className="text-xs text-red-500 mt-1">{errors.splitWith.message}</p>}
+                {errors.splitWithUserIds && <p className="text-xs text-red-500 mt-1">{errors.splitWithUserIds.message}</p>}
                 <p className="text-[10px] text-text-secondary mt-2">
-                    * {splitWith.length} people selected
+                    * {splitWithUserIds.length} people selected
                 </p>
             </div>
 

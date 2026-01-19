@@ -112,6 +112,7 @@ export interface Trip {
     transport?: TransportItem[];
     expenses?: ExpenseItem[];
     members?: string[];
+    my_role?: 'owner' | 'editor' | 'viewer';
     [key: string]: any;
 }
 
@@ -160,6 +161,10 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
     const queryClient = useQueryClient();
 
     const fetchTrips = async () => {
+        if (!user?.id) {
+            return [];
+        }
+
         const { data, error} = await supabase
             .from('trips')
             .select(`
@@ -170,8 +175,11 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                 wallet:tickets(id, type, provider, reference_number, departure_time, arrival_time, notes, file_url),
                 accommodation(id, name, address, check_in, check_out, booking_reference, notes, cost, latitude, longitude),
                 transport(id, type, provider, departure_location, arrival_location, departure_time, arrival_time, booking_reference, notes, cost, departure_latitude, departure_longitude, arrival_latitude, arrival_longitude),
-                expenses(id, payer, amount, description, date, category, split_with)
+                expenses(id, payer, amount, description, date, category, split_with),
+                my_role:trip_collaborators!inner(role)
             `)
+            .eq('trip_collaborators.user_id', user.id)
+            .eq('trip_collaborators.status', 'active')
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -180,6 +188,7 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
         return (data || []).map((trip: any) => ({
             ...trip,
             image: trip.hero_image, // Add image alias for backwards compatibility
+            my_role: trip.my_role?.[0]?.role || 'viewer', // Extract role from join
             itinerary: (trip.itinerary || []).map((item: any) => ({
                 ...item,
                 title: item.activity,

@@ -1,20 +1,15 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
 import { Session, User } from '@supabase/supabase-js';
-
-// Create a singleton client for the browser
-const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { supabase } from '../lib/supabase';
 
 interface AuthContextType {
     signUp: (email: string, password: string, options?: { captchaToken?: string }) => Promise<any>;
     signIn: (email: string, password: string, options?: { captchaToken?: string }) => Promise<any>;
     signOut: () => Promise<any>;
     signInWithGoogle: () => Promise<any>;
+    resetPassword: (email: string) => Promise<any>;
     user: User | null;
     session: Session | null;
     loading: boolean;
@@ -92,11 +87,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
     };
 
+    const resetPassword = async (email: string) => {
+        return await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/auth/reset-password`,
+        });
+    };
+
     const value = {
         signUp,
         signIn,
         signOut,
         signInWithGoogle,
+        resetPassword,
         user,
         session,
         loading

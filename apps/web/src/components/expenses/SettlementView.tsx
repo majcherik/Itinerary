@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { Trip, ExpenseItem } from '@itinerary/shared';
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Trip, ExpenseItem, useCollaborators } from '@itinerary/shared';
+import { ArrowRight, CheckCircle2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SettlementViewProps {
@@ -14,25 +14,73 @@ interface Transaction {
 }
 
 const SettlementView: React.FC<SettlementViewProps> = ({ trip }) => {
+    const { data: collaborators, isLoading } = useCollaborators(trip.id);
     const expenses = trip.expenses || [];
-    const members = trip.members || ['Me'];
+
+    // Create user ID to name mapping
+    const userIdToName = useMemo(() => {
+        const map: Record<string, string> = {};
+        if (collaborators) {
+            collaborators.forEach(collab => {
+                map[collab.user.id] = collab.user.display_name || collab.user.email || 'Unknown';
+            });
+        }
+        return map;
+    }, [collaborators]);
+
+    // Get all display names for balances
+    const allDisplayNames = useMemo(() => {
+        const names = new Set<string>();
+
+        // Add all collaborator names
+        if (collaborators) {
+            collaborators.forEach(collab => {
+                names.add(collab.user.display_name || collab.user.email || 'Unknown');
+            });
+        }
+
+        // Add legacy member names from old expenses
+        expenses.forEach(exp => {
+            if (exp.payer) names.add(exp.payer);
+            if (exp.splitWith) exp.splitWith.forEach(name => names.add(name));
+        });
+
+        return Array.from(names);
+    }, [collaborators, expenses]);
 
     const settlements = useMemo(() => {
         // 1. Calculate Net Balance for each person
         const balances: { [key: string]: number } = {};
-        members.forEach(m => balances[m] = 0);
+        allDisplayNames.forEach(name => balances[name] = 0);
 
-        expenses.forEach(exp => {
-            const paidBy = exp.payer;
+        expenses.forEach((exp: any) => {
             const amount = Number(exp.amount);
-            const splitWith = exp.splitWith || members; // Fallback to all if empty (shouldn't happen)
+
+            // Determine payer and split - support both old and new formats
+            let payerName: string;
+            let splitWithNames: string[];
+
+            if (exp.payer_user_id && exp.split_with_user_ids) {
+                // New format: use user IDs
+                payerName = userIdToName[exp.payer_user_id] || 'Unknown';
+                splitWithNames = (exp.split_with_user_ids || []).map((id: string) =>
+                    userIdToName[id] || 'Unknown'
+                );
+            } else {
+                // Old format: use string names
+                payerName = exp.payer;
+                splitWithNames = exp.split_with || exp.splitWith || allDisplayNames;
+            }
+
+            // Skip if no valid payer or split
+            if (!payerName || splitWithNames.length === 0) return;
 
             // Payer gets +amount
-            balances[paidBy] = (balances[paidBy] || 0) + amount;
+            balances[payerName] = (balances[payerName] || 0) + amount;
 
             // Splitters get -share
-            const share = amount / splitWith.length;
-            splitWith.forEach(person => {
+            const share = amount / splitWithNames.length;
+            splitWithNames.forEach(person => {
                 balances[person] = (balances[person] || 0) - share;
             });
         });
@@ -79,9 +127,18 @@ const SettlementView: React.FC<SettlementViewProps> = ({ trip }) => {
         }
 
         return { transactions, balances };
-    }, [expenses, members]);
+    }, [expenses, allDisplayNames, userIdToName]);
 
     const { transactions, balances } = settlements;
+
+    // Show loading state
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center py-12">
+                <Loader2 className="animate-spin" size={32} />
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col gap-8">

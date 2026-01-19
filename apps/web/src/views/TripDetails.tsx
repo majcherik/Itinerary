@@ -13,8 +13,10 @@ import { convertFromUSD } from '../lib/currency-utils';
 import Modal from '../components/Modal';
 import ShareTripModal from '../components/ShareTripModal';
 import ExportMenu from '../components/ExportMenu';
-import { MapPin, Calendar, Home, Train, Plus, Clock, Copy, Check, ArrowLeft, Share2, MoreVertical, Edit2, CheckCircle2, Circle, X, ExternalLink, Banknote, Trash2, Map as MapIcon, List } from 'lucide-react';
-import { useTrip, useCopyToClipboard, useDocumentTitle, useLocalStorage, Trip, ItineraryItem, AccommodationItem, TransportItem, formatDate, formatDateTime } from '@itinerary/shared';
+import CollaboratorAvatars from '../components/CollaboratorAvatars';
+import CollaboratorModal from '../components/CollaboratorModal';
+import { MapPin, Calendar, Home, Train, Plus, Clock, Copy, Check, ArrowLeft, Share2, MoreVertical, Edit2, CheckCircle2, Circle, X, ExternalLink, Banknote, Trash2, Map as MapIcon, List, Users } from 'lucide-react';
+import { useTrip, useCopyToClipboard, useDocumentTitle, useLocalStorage, useIsOwner, Trip, ItineraryItem, AccommodationItem, TransportItem, formatDate, formatDateTime } from '@itinerary/shared';
 import FadeIn from '../components/FadeIn';
 import { Skeleton } from '../components/ui/skeleton';
 import ItineraryTimeline from '../components/ItineraryTimeline';
@@ -54,8 +56,12 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
     const trip = trips.find(t => t.id === Number(id));
     useDocumentTitle(trip ? `${trip.title} | TripPlanner` : 'Trip Details | TripPlanner');
 
+    // Collaboration
+    const { isOwner } = useIsOwner(Number(id));
+
     // Modal State
     const [activeModal, setActiveModal] = useState<'itinerary' | 'accommodation' | 'transport' | null>(null);
+    const [isCollaboratorModalOpen, setIsCollaboratorModalOpen] = useState(false);
 
     // Form States
     interface ItineraryFormState {
@@ -540,7 +546,10 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
             {/* Header Section without Image */}
             <div className="flex items-center gap-4">
                 <div className="flex-1">
-                    <h1 className="text-3xl font-bold mb-1">{trip.title}</h1>
+                    <div className="flex items-center gap-3 mb-2">
+                        <h1 className="text-3xl font-bold">{trip.title}</h1>
+                        <CollaboratorAvatars tripId={trip.id} size="md" />
+                    </div>
                     <p className="text-text-secondary text-sm mb-2">{dateString}</p>
                     <div className="flex items-center gap-3 flex-wrap">
                         <Button
@@ -559,6 +568,16 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                         >
                             <Share2 size={14} /> Share Trip
                         </Button>
+                        {isOwner && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setIsCollaboratorModalOpen(true)}
+                                className="h-8 text-xs gap-2"
+                            >
+                                <Users size={14} /> Manage Collaborators
+                            </Button>
+                        )}
                         <ExportMenu trip={trip} />
                     </div>
                 </div>
@@ -595,6 +614,12 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                 onClose={() => setIsShareModalOpen(false)}
                 tripId={trip.id}
                 tripTitle={trip.title}
+            />
+
+            <CollaboratorModal
+                tripId={trip.id}
+                isOpen={isCollaboratorModalOpen}
+                onClose={() => setIsCollaboratorModalOpen(false)}
             />
 
             <Tabs
