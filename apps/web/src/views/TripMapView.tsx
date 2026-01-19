@@ -97,7 +97,7 @@ const TripMapView: React.FC<TripMapViewProps> = ({ trip }) => {
     if (!activeLayers.has('itinerary')) return [];
     return (trip.itinerary || [])
       .filter((item) => item.latitude != null && item.longitude != null)
-      .sort((a, b) => (a.day || 0) - (b.day || 0))
+      .toSorted((a, b) => (a.day || 0) - (b.day || 0))
       .map((item) => [item.longitude!, item.latitude!] as [number, number]);
   }, [trip, activeLayers]);
 

@@ -49,16 +49,16 @@ const SettlementView: React.FC<SettlementViewProps> = ({ trip }) => {
         });
 
         // Sort by amount magnitude (optional but helps greedy approach)
-        debtors.sort((a, b) => a.amount - b.amount);
-        creditors.sort((a, b) => b.amount - a.amount);
+        const sortedDebtors = debtors.toSorted((a, b) => a.amount - b.amount);
+        const sortedCreditors = creditors.toSorted((a, b) => b.amount - a.amount);
 
         const transactions: Transaction[] = [];
         let i = 0; // debtor index
         let j = 0; // creditor index
 
-        while (i < debtors.length && j < creditors.length) {
-            const debtor = debtors[i];
-            const creditor = creditors[j];
+        while (i < sortedDebtors.length && j < sortedCreditors.length) {
+            const debtor = sortedDebtors[i];
+            const creditor = sortedCreditors[j];
 
             // The amount to settle is the minimum of what debtor owes and creditor is owed
             const amount = Math.min(Math.abs(debtor.amount), creditor.amount);

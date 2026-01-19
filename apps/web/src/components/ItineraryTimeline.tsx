@@ -33,7 +33,7 @@ const formatDateForTimeline = (dateString: string): string => {
 const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({ items }) => {
     // Sort items by day/date (memoized to avoid re-sorting on every render)
     const sortedItems = React.useMemo(() => {
-        return [...items].sort((a, b) => a.day - b.day);
+        return items.toSorted((a, b) => a.day - b.day);
     }, [items]);
 
     // Map itinerary items to React Chrono format

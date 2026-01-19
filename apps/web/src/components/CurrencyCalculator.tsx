@@ -186,7 +186,7 @@ const CurrencyCalculator: React.FC<CurrencyCalculatorProps> = ({ onClose }) => {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {Object.keys(currencies).sort().map((code) => (
+                                            {Object.keys(currencies).toSorted().map((code) => (
                                                 <SelectItem key={code} value={code}>
                                                     {code}
                                                 </SelectItem>
@@ -237,7 +237,7 @@ const CurrencyCalculator: React.FC<CurrencyCalculatorProps> = ({ onClose }) => {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {Object.keys(currencies).sort().map((code) => (
+                                            {Object.keys(currencies).toSorted().map((code) => (
                                                 <SelectItem key={code} value={code}>
                                                     {code}
                                                 </SelectItem>

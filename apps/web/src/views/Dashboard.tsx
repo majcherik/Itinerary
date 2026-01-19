@@ -27,7 +27,7 @@ const Dashboard: React.FC = () => {
                 const tripDate = new Date(`${t.start_date}T00:00:00`);
                 return tripDate >= now;
             })
-            .sort((a, b) => new Date(`${a.start_date}T00:00:00`).getTime() - new Date(`${b.start_date}T00:00:00`).getTime());
+            .toSorted((a, b) => new Date(`${a.start_date}T00:00:00`).getTime() - new Date(`${b.start_date}T00:00:00`).getTime());
 
         return futureTrips[0];
     }, [trips]);
