@@ -124,10 +124,13 @@ interface TripContextType {
     updateTrip: (id: number | string, updates: any) => Promise<any>;
     deleteTrip: (id: number | string) => Promise<void>;
     addItineraryItem: (tripId: number | string, item: any) => Promise<any>;
+    updateItineraryItem: (tripId: number | string, itemId: number | string, updates: any) => Promise<any>;
     deleteItineraryItem: (tripId: number | string, itemId: number | string) => Promise<void>;
     addAccommodation: (tripId: number | string, item: any) => Promise<any>;
+    updateAccommodation: (tripId: number | string, itemId: number | string, updates: any) => Promise<any>;
     deleteAccommodation: (tripId: number | string, itemId: number | string) => Promise<void>;
     addTransport: (tripId: number | string, item: any) => Promise<any>;
+    updateTransport: (tripId: number | string, itemId: number | string, updates: any) => Promise<any>;
     deleteTransport: (tripId: number | string, itemId: number | string) => Promise<void>;
     addTicket: (tripId: number | string, ticket: any) => Promise<any>;
     deleteTicket: (tripId: number | string, ticketId: number | string) => Promise<void>;
@@ -309,6 +312,31 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
         onSuccess: invalidateTrips,
     });
 
+    const updateItineraryItemMutation = useMutation({
+        mutationFn: async ({ tripId, itemId, updates }: { tripId: number | string, itemId: number | string, updates: any }) => {
+            const dbUpdates: any = {};
+            if (updates.title) dbUpdates.activity = updates.title;
+            if (updates.activity) dbUpdates.activity = updates.activity;
+            if (updates.description) dbUpdates.notes = updates.description;
+            if (updates.notes) dbUpdates.notes = updates.notes;
+            if (updates.cost !== undefined) dbUpdates.cost = updates.cost;
+            if (updates.time !== undefined) dbUpdates.time = updates.time;
+            if (updates.latitude !== undefined) dbUpdates.latitude = updates.latitude;
+            if (updates.longitude !== undefined) dbUpdates.longitude = updates.longitude;
+            if (updates.location_name !== undefined) dbUpdates.location_name = updates.location_name;
+
+            const { data, error } = await supabase
+                .from('itinerary_items')
+                .update(dbUpdates)
+                .eq('id', itemId)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: invalidateTrips,
+    });
+
     const deleteItineraryItemMutation = useMutation({
         mutationFn: async ({ tripId, itemId }: { tripId: number | string, itemId: number | string }) => {
             const { error } = await supabase.from('itinerary_items').delete().eq('id', itemId);
@@ -332,6 +360,32 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                     latitude: item.latitude || null,
                     longitude: item.longitude || null
                 }] as any)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: invalidateTrips,
+    });
+
+    const updateAccommodationMutation = useMutation({
+        mutationFn: async ({ tripId, itemId, updates }: { tripId: number | string, itemId: number | string, updates: any }) => {
+            const dbUpdates: any = {};
+            if (updates.name) dbUpdates.name = updates.name;
+            if (updates.address) dbUpdates.address = updates.address;
+            if (updates.checkIn) dbUpdates.check_in = updates.checkIn;
+            if (updates.check_in) dbUpdates.check_in = updates.check_in;
+            if (updates.checkOut) dbUpdates.check_out = updates.checkOut;
+            if (updates.check_out) dbUpdates.check_out = updates.check_out;
+            if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
+            if (updates.cost !== undefined) dbUpdates.cost = updates.cost;
+            if (updates.latitude !== undefined) dbUpdates.latitude = updates.latitude;
+            if (updates.longitude !== undefined) dbUpdates.longitude = updates.longitude;
+
+            const { data, error } = await supabase
+                .from('accommodation')
+                .update(dbUpdates)
+                .eq('id', itemId)
                 .select()
                 .single();
             if (error) throw error;
@@ -366,6 +420,36 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                     arrival_latitude: item.arrival_latitude || null,
                     arrival_longitude: item.arrival_longitude || null
                 }] as any)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: invalidateTrips,
+    });
+
+    const updateTransportMutation = useMutation({
+        mutationFn: async ({ tripId, itemId, updates }: { tripId: number | string, itemId: number | string, updates: any }) => {
+            const dbUpdates: any = {};
+            if (updates.type) dbUpdates.type = updates.type;
+            if (updates.from) dbUpdates.departure_location = updates.from;
+            if (updates.departure_location) dbUpdates.departure_location = updates.departure_location;
+            if (updates.to) dbUpdates.arrival_location = updates.to;
+            if (updates.arrival_location) dbUpdates.arrival_location = updates.arrival_location;
+            if (updates.depart) dbUpdates.departure_time = updates.depart;
+            if (updates.departure_time) dbUpdates.departure_time = updates.departure_time;
+            if (updates.arrive) dbUpdates.arrival_time = updates.arrive;
+            if (updates.arrival_time) dbUpdates.arrival_time = updates.arrival_time;
+            if (updates.cost !== undefined) dbUpdates.cost = updates.cost;
+            if (updates.departure_latitude !== undefined) dbUpdates.departure_latitude = updates.departure_latitude;
+            if (updates.departure_longitude !== undefined) dbUpdates.departure_longitude = updates.departure_longitude;
+            if (updates.arrival_latitude !== undefined) dbUpdates.arrival_latitude = updates.arrival_latitude;
+            if (updates.arrival_longitude !== undefined) dbUpdates.arrival_longitude = updates.arrival_longitude;
+
+            const { data, error } = await supabase
+                .from('transport')
+                .update(dbUpdates)
+                .eq('id', itemId)
                 .select()
                 .single();
             if (error) throw error;
@@ -560,10 +644,13 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
             updateTrip: (id, updates) => updateTripMutation.mutateAsync({ id, updates }),
             deleteTrip: deleteTripMutation.mutateAsync,
             addItineraryItem: (tripId, item) => addItineraryItemMutation.mutateAsync({ tripId, item }),
+            updateItineraryItem: (tripId, itemId, updates) => updateItineraryItemMutation.mutateAsync({ tripId, itemId, updates }),
             deleteItineraryItem: (tripId, itemId) => deleteItineraryItemMutation.mutateAsync({ tripId, itemId }),
             addAccommodation: (tripId, item) => addAccommodationMutation.mutateAsync({ tripId, item }),
+            updateAccommodation: (tripId, itemId, updates) => updateAccommodationMutation.mutateAsync({ tripId, itemId, updates }),
             deleteAccommodation: (tripId, itemId) => deleteAccommodationMutation.mutateAsync({ tripId, itemId }),
             addTransport: (tripId, item) => addTransportMutation.mutateAsync({ tripId, item }),
+            updateTransport: (tripId, itemId, updates) => updateTransportMutation.mutateAsync({ tripId, itemId, updates }),
             deleteTransport: (tripId, itemId) => deleteTransportMutation.mutateAsync({ tripId, itemId }),
             addTicket: (tripId, ticket) => addTicketMutation.mutateAsync({ tripId, ticket }),
             deleteTicket: (tripId, ticketId) => deleteTicketMutation.mutateAsync({ tripId, ticketId }),
