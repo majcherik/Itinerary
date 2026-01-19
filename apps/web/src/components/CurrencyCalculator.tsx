@@ -16,28 +16,39 @@ interface CurrencyCalculatorProps {
 }
 
 const CurrencyCalculator: React.FC<CurrencyCalculatorProps> = ({ onClose }) => {
-    const [currencies, setCurrencies] = useState<Record<string, string>>({});
-    const [rates, setRates] = useState<Record<string, number>>({});
-    const [amount, setAmount] = useState<string>("100");
-    const [fromCurrency, setFromCurrency] = useState("USD");
-    const [toCurrency, setToCurrency] = useState("EUR");
-    const [result, setResult] = useState<number | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [converting, setConverting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [isFlipped, setIsFlipped] = useState(false);
+    const [state, setState] = useState({
+        currencies: {} as Record<string, string>,
+        rates: {} as Record<string, number>,
+        amount: "100",
+        fromCurrency: "USD",
+        toCurrency: "EUR",
+        result: null as number | null,
+        loading: true,
+        converting: false,
+        error: null as string | null,
+        isFlipped: false
+    });
+
+    // Destructure for easier access
+    const { currencies, rates, amount, fromCurrency, toCurrency, result, loading, converting, error, isFlipped } = state;
 
     // Initial Data Load
     useEffect(() => {
         const loadData = async () => {
             try {
                 const data = await getCurrencyData();
-                setCurrencies(data.currencies);
-                setRates(data.rates);
-                setLoading(false);
+                setState(curr => ({
+                    ...curr,
+                    currencies: data.currencies,
+                    rates: data.rates,
+                    loading: false
+                }));
             } catch (err) {
-                setError('Failed to load currencies');
-                setLoading(false);
+                setState(curr => ({
+                    ...curr,
+                    error: 'Failed to load currencies',
+                    loading: false
+                }));
             }
         };
         loadData();
@@ -49,22 +60,24 @@ const CurrencyCalculator: React.FC<CurrencyCalculatorProps> = ({ onClose }) => {
     useEffect(() => {
         const convert = () => {
             if (!debouncedAmount || !fromCurrency || !toCurrency || Object.keys(rates).length === 0) {
-                setResult(null);
-                setConverting(false);
+                setState(curr => ({ ...curr, result: null, converting: false }));
                 return;
             }
 
-            setConverting(true);
+            setState(curr => ({ ...curr, converting: true }));
             try {
                 const numAmount = typeof debouncedAmount === 'string' ? parseFloat(debouncedAmount) : debouncedAmount;
 
                 if (isNaN(numAmount)) {
-                    setError("Enter a valid amount");
-                    setResult(null);
-                    setConverting(false);
+                    setState(curr => ({
+                        ...curr,
+                        error: "Enter a valid amount",
+                        result: null,
+                        converting: false
+                    }));
                     return;
                 } else {
-                    setError(null);
+                    setState(curr => ({ ...curr, error: null }));
                 }
 
                 // Convert from base currency (USD) to target
@@ -74,11 +87,11 @@ const CurrencyCalculator: React.FC<CurrencyCalculatorProps> = ({ onClose }) => {
                 const usdAmount = fromCurrency === 'USD' ? numAmount : numAmount / fromRate;
                 const converted = usdAmount * toRate;
 
-                setResult(converted);
+                setState(curr => ({ ...curr, result: converted }));
             } catch (error) {
-                setError('Conversion failed');
+                setState(curr => ({ ...curr, error: 'Conversion failed' }));
             } finally {
-                setConverting(false);
+                setState(curr => ({ ...curr, converting: false }));
             }
         };
 
@@ -86,9 +99,12 @@ const CurrencyCalculator: React.FC<CurrencyCalculatorProps> = ({ onClose }) => {
     }, [debouncedAmount, fromCurrency, toCurrency, rates]);
 
     const handleSwap = () => {
-        setFromCurrency(toCurrency);
-        setToCurrency(fromCurrency);
-        setIsFlipped(!isFlipped);
+        setState(curr => ({
+            ...curr,
+            fromCurrency: curr.toCurrency,
+            toCurrency: curr.fromCurrency,
+            isFlipped: !curr.isFlipped
+        }));
     };
 
     const formattedResult = useMemo(() => {
@@ -159,13 +175,13 @@ const CurrencyCalculator: React.FC<CurrencyCalculatorProps> = ({ onClose }) => {
                                         type="number"
                                         inputMode="decimal"
                                         value={amount}
-                                        onChange={(event) => setAmount(event.target.value)}
+                                        onChange={(event) => setState(curr => ({ ...curr, amount: event.target.value }))}
                                         placeholder="Amount"
                                         className="w-full rounded-lg border border-border bg-background/50 px-8 py-3 text-lg font-semibold text-foreground shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-primary/40"
                                     />
                                 </div>
                                 <div className="w-[140px]">
-                                    <Select value={fromCurrency} onValueChange={setFromCurrency}>
+                                    <Select value={fromCurrency} onValueChange={(value) => setState(curr => ({ ...curr, fromCurrency: value }))}>
                                         <SelectTrigger className="h-[50px] font-semibold">
                                             <SelectValue />
                                         </SelectTrigger>
@@ -216,7 +232,7 @@ const CurrencyCalculator: React.FC<CurrencyCalculatorProps> = ({ onClose }) => {
                                     />
                                 </motion.div>
                                 <div className="w-[140px]">
-                                    <Select value={toCurrency} onValueChange={setToCurrency}>
+                                    <Select value={toCurrency} onValueChange={(value) => setState(curr => ({ ...curr, toCurrency: value }))}>
                                         <SelectTrigger className="h-[50px] font-semibold">
                                             <SelectValue />
                                         </SelectTrigger>
