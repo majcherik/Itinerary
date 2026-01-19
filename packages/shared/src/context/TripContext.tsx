@@ -166,63 +166,69 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         const { data, error} = await supabase
-            .from('trips')
+            .from('trip_collaborators')
             .select(`
-                id, user_id, title, start_date, end_date, city, hero_image, members, latitude, longitude, created_at,
-                itinerary:itinerary_items(id, day, activity, notes, cost, time, latitude, longitude, location_name),
-                packingList:packing_items(id, item, category, is_packed),
-                documents(id, title, content, type, created_at),
-                wallet:tickets(id, type, provider, reference_number, departure_time, arrival_time, notes, file_url),
-                accommodation(id, name, address, check_in, check_out, booking_reference, notes, cost, latitude, longitude),
-                transport(id, type, provider, departure_location, arrival_location, departure_time, arrival_time, booking_reference, notes, cost, departure_latitude, departure_longitude, arrival_latitude, arrival_longitude),
-                expenses(id, payer, amount, description, date, category, split_with),
-                my_role:trip_collaborators!inner(role)
+                role,
+                trip:trips!inner (
+                    id, user_id, title, start_date, end_date, city, hero_image, members, latitude, longitude, created_at,
+                    itinerary:itinerary_items(id, day, activity, notes, cost, time, latitude, longitude, location_name),
+                    packingList:packing_items(id, item, category, is_packed),
+                    documents(id, title, content, type, created_at),
+                    wallet:tickets(id, type, provider, reference_number, departure_time, arrival_time, notes, file_url),
+                    accommodation(id, name, address, check_in, check_out, booking_reference, notes, cost, latitude, longitude),
+                    transport(id, type, provider, departure_location, arrival_location, departure_time, arrival_time, booking_reference, notes, cost, departure_latitude, departure_longitude, arrival_latitude, arrival_longitude),
+                    expenses(id, payer, amount, description, date, category, split_with)
+                )
             `)
-            .eq('trip_collaborators.user_id', user.id)
-            .eq('trip_collaborators.status', 'active')
-            .order('created_at', { ascending: false });
+            .eq('user_id', user.id)
+            .eq('status', 'active')
+            .order('created_at', { foreignTable: 'trips', ascending: false });
 
         if (error) throw error;
 
         // Transform database column names to match TypeScript types
-        return (data || []).map((trip: any) => ({
-            ...trip,
-            image: trip.hero_image, // Add image alias for backwards compatibility
-            my_role: trip.my_role?.[0]?.role || 'viewer', // Extract role from join
-            itinerary: (trip.itinerary || []).map((item: any) => ({
-                ...item,
-                title: item.activity,
-                description: item.notes
-            })),
-            accommodation: (trip.accommodation || []).map((accom: any) => ({
-                ...accom,
-                checkIn: accom.check_in,
-                checkOut: accom.check_out
-            })),
-            transport: (trip.transport || []).map((trans: any) => ({
-                ...trans,
-                from: trans.departure_location,
-                to: trans.arrival_location,
-                depart: trans.departure_time,
-                arrive: trans.arrival_time
-            })),
-            wallet: (trip.wallet || []).map((ticket: any) => ({
-                ...ticket,
-                refNumber: ticket.reference_number,
-                departs: ticket.departure_time,
-                arrives: ticket.arrival_time,
-                file: ticket.file_url
-            })),
-            documents: (trip.documents || []).map((doc: any) => ({
-                ...doc,
-                content: typeof doc.content === 'string' ? doc.content.split('\n') : doc.content
-            })),
-            expenses: (trip.expenses || []).map((exp: any) => ({
-                ...exp,
-                splitWith: exp.split_with
-            })),
-            members: trip.members || ['Me']
-        }));
+        // Data structure: { role, trip: {...} }
+        return (data || []).map((collab: any) => {
+            const trip = Array.isArray(collab.trip) ? collab.trip[0] : collab.trip;
+            return {
+                ...trip,
+                image: trip.hero_image, // Add image alias for backwards compatibility
+                my_role: collab.role, // Get role from collaborator record
+                itinerary: (trip.itinerary || []).map((item: any) => ({
+                    ...item,
+                    title: item.activity,
+                    description: item.notes
+                })),
+                accommodation: (trip.accommodation || []).map((accom: any) => ({
+                    ...accom,
+                    checkIn: accom.check_in,
+                    checkOut: accom.check_out
+                })),
+                transport: (trip.transport || []).map((trans: any) => ({
+                    ...trans,
+                    from: trans.departure_location,
+                    to: trans.arrival_location,
+                    depart: trans.departure_time,
+                    arrive: trans.arrival_time
+                })),
+                wallet: (trip.wallet || []).map((ticket: any) => ({
+                    ...ticket,
+                    refNumber: ticket.reference_number,
+                    departs: ticket.departure_time,
+                    arrives: ticket.arrival_time,
+                    file: ticket.file_url
+                })),
+                documents: (trip.documents || []).map((doc: any) => ({
+                    ...doc,
+                    content: typeof doc.content === 'string' ? doc.content.split('\n') : doc.content
+                })),
+                expenses: (trip.expenses || []).map((exp: any) => ({
+                    ...exp,
+                    splitWith: exp.split_with
+                })),
+                members: trip.members || ['Me']
+            };
+        });
     };
 
     const { data: trips = [], isLoading: loading } = useQuery({
