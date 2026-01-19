@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Plus, Users, PieChart as PieChartIcon, List } from 'lucide-react';
-import { useTrip, Trip, formatDate } from '@itinerary/shared';
+import { useTrip, useCanEdit, Trip, formatDate } from '@itinerary/shared';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { cn } from '@/lib/utils';
 import Modal from '../Modal';
@@ -25,6 +25,7 @@ const LegendAny = Legend as any;
 
 const ExpensesTab: React.FC<ExpensesTabProps> = ({ trip }) => {
     const { deleteExpense } = useTrip();
+    const { canEdit } = useCanEdit(trip.id);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'list' | 'chart' | 'settlement'>('list');
@@ -127,11 +128,13 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({ trip }) => {
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <span className="font-bold text-lg">${Number(expense.amount).toFixed(2)}</span>
-                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <AnimatedDeleteButton
-                                                onClick={() => handleDelete(expense.id!)}
-                                            />
-                                        </div>
+                                        {canEdit && (
+                                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <AnimatedDeleteButton
+                                                    onClick={() => handleDelete(expense.id!)}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))

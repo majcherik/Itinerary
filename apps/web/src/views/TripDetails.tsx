@@ -16,7 +16,7 @@ import ExportMenu from '../components/ExportMenu';
 import CollaboratorAvatars from '../components/CollaboratorAvatars';
 import CollaboratorModal from '../components/CollaboratorModal';
 import { MapPin, Calendar, Home, Train, Plus, Clock, Copy, Check, ArrowLeft, Share2, MoreVertical, Edit2, CheckCircle2, Circle, X, ExternalLink, Banknote, Trash2, Map as MapIcon, List, Users } from 'lucide-react';
-import { useTrip, useCopyToClipboard, useDocumentTitle, useLocalStorage, useIsOwner, Trip, ItineraryItem, AccommodationItem, TransportItem, formatDate, formatDateTime } from '@itinerary/shared';
+import { useTrip, useCopyToClipboard, useDocumentTitle, useLocalStorage, useIsOwner, useCanEdit, Trip, ItineraryItem, AccommodationItem, TransportItem, formatDate, formatDateTime } from '@itinerary/shared';
 import FadeIn from '../components/FadeIn';
 import { Skeleton } from '../components/ui/skeleton';
 import ItineraryTimeline from '../components/ItineraryTimeline';
@@ -58,6 +58,7 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
 
     // Collaboration
     const { isOwner } = useIsOwner(Number(id));
+    const { canEdit } = useCanEdit(Number(id));
 
     // Modal State
     const [activeModal, setActiveModal] = useState<'itinerary' | 'accommodation' | 'transport' | null>(null);
@@ -278,9 +279,11 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                             Map
                         </Button>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => setActiveModal('itinerary')} className="h-8 text-xs gap-1">
-                        <Plus size={14} /> Add Item
-                    </Button>
+                    {canEdit && (
+                        <Button variant="outline" size="sm" onClick={() => setActiveModal('itinerary')} className="h-8 text-xs gap-1">
+                            <Plus size={14} /> Add Item
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -293,18 +296,20 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
                                 {item.day}
                             </div>
                             <div className="card group relative pr-10">
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (window.confirm('Delete this event?')) {
-                                            deleteItineraryItem(id as string, item.id as string);
-                                        }
-                                    }}
-                                    className="absolute top-3 right-3 p-2 bg-white/90 rounded-full text-text-secondary hover:text-red-500 hover:bg-red-50 shadow-md transition-all opacity-0 group-hover:opacity-100"
-                                    title="Delete Event"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
+                                {canEdit && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (window.confirm('Delete this event?')) {
+                                                deleteItineraryItem(id as string, item.id as string);
+                                            }
+                                        }}
+                                        className="absolute top-3 right-3 p-2 bg-white/90 rounded-full text-text-secondary hover:text-red-500 hover:bg-red-50 shadow-md transition-all opacity-0 group-hover:opacity-100"
+                                        title="Delete Event"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                )}
                                 <span className="text-xs font-bold text-accent-primary uppercase tracking-wider">{formatDate(item.date)}</span>
                                 <div className="flex justify-between items-start">
                                     <h4 className="font-bold text-lg mt-1">{item.title}</h4>
@@ -329,26 +334,30 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
         <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center">
                 <h3 className="font-bold text-lg">Stays</h3>
-                <Button variant="outline" size="sm" onClick={() => setActiveModal('accommodation')} className="h-8 text-xs gap-1">
-                    <Plus size={14} /> Add Stay
-                </Button>
+                {canEdit && (
+                    <Button variant="outline" size="sm" onClick={() => setActiveModal('accommodation')} className="h-8 text-xs gap-1">
+                        <Plus size={14} /> Add Stay
+                    </Button>
+                )}
             </div>
             <div className="grid gap-4">
                 {(trip.accommodation || []).map((place, index) => (
                     <FadeIn key={place.id || place.name} delay={index * 100}>
                         <div className="card flex gap-4 group relative pr-10">
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (window.confirm('Delete this accommodation?')) {
-                                        deleteAccommodation(id as string, place.id as string);
-                                    }
-                                }}
-                                className="absolute top-3 right-3 p-2 bg-white/90 rounded-full text-text-secondary hover:text-red-500 hover:bg-red-50 shadow-md transition-all opacity-0 group-hover:opacity-100"
-                                title="Delete Accommodation"
-                            >
-                                <Trash2 size={16} />
-                            </button>
+                            {canEdit && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (window.confirm('Delete this accommodation?')) {
+                                            deleteAccommodation(id as string, place.id as string);
+                                        }
+                                    }}
+                                    className="absolute top-3 right-3 p-2 bg-white/90 rounded-full text-text-secondary hover:text-red-500 hover:bg-red-50 shadow-md transition-all opacity-0 group-hover:opacity-100"
+                                    title="Delete Accommodation"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            )}
                             <div className="p-3 bg-bg-primary rounded-lg h-fit">
                                 <Home size={24} className="text-accent-secondary" />
                             </div>
@@ -394,26 +403,30 @@ const TripDetails: React.FC<TripDetailsProps> = ({ tripId: propTripId }) => {
         <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center">
                 <h3 className="font-bold text-lg">Transport</h3>
-                <Button variant="outline" size="sm" onClick={() => setActiveModal('transport')} className="h-8 text-xs gap-1">
-                    <Plus size={14} /> Add Transport
-                </Button>
+                {canEdit && (
+                    <Button variant="outline" size="sm" onClick={() => setActiveModal('transport')} className="h-8 text-xs gap-1">
+                        <Plus size={14} /> Add Transport
+                    </Button>
+                )}
             </div>
             <div className="grid gap-4">
                 {(trip.transport || []).map((ride, index) => (
                     <FadeIn key={ride.id || ride.number} delay={index * 100}>
                         <div className="card group relative pr-10">
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (window.confirm('Delete this transport?')) {
-                                        deleteTransport(id as string, ride.id as string);
-                                    }
-                                }}
-                                className="absolute top-3 right-3 p-2 bg-white/90 rounded-full text-text-secondary hover:text-red-500 hover:bg-red-50 shadow-md transition-all opacity-0 group-hover:opacity-100"
-                                title="Delete Transport"
-                            >
-                                <Trash2 size={16} />
-                            </button>
+                            {canEdit && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (window.confirm('Delete this transport?')) {
+                                            deleteTransport(id as string, ride.id as string);
+                                        }
+                                    }}
+                                    className="absolute top-3 right-3 p-2 bg-white/90 rounded-full text-text-secondary hover:text-red-500 hover:bg-red-50 shadow-md transition-all opacity-0 group-hover:opacity-100"
+                                    title="Delete Transport"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            )}
                             <div className="flex justify-between items-start mb-4">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-bg-primary rounded-lg">
