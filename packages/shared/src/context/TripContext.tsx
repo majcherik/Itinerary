@@ -161,21 +161,22 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
             .from('trips')
             .select(`
                 id, user_id, title, start_date, end_date, city, hero_image, members, latitude, longitude, created_at,
-                itinerary:itinerary_items(id, day, date, activity, notes, cost, time, latitude, longitude, location_name),
+                itinerary:itinerary_items(id, day, activity, notes, cost, time, latitude, longitude, location_name),
                 packingList:packing_items(id, item, category, is_packed),
-                documents(id, title, content, type, date, isWarning),
-                wallet:tickets(id, type, provider, refNumber, departs, arrives, returnDeparts, returnArrives, isRoundTrip, notes, file),
-                accommodation(id, name, address, checkIn, checkOut, type, notes, cost, latitude, longitude),
-                transport(id, type, number, from, to, depart, arrive, cost, departure_latitude, departure_longitude, arrival_latitude, arrival_longitude, departure_location, arrival_location, provider),
-                expenses(id, payer, amount, description, date, category, splitWith)
+                documents(id, title, content, type, created_at),
+                wallet:tickets(id, type, provider, reference_number, departure_time, arrival_time, notes, file_url),
+                accommodation(id, name, address, check_in, check_out, booking_reference, notes, cost, latitude, longitude),
+                transport(id, type, provider, departure_location, arrival_location, departure_time, arrival_time, booking_reference, notes, cost, departure_latitude, departure_longitude, arrival_latitude, arrival_longitude),
+                expenses(id, payer, amount, description, date, category, split_with)
             `)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        // Transform documents content from string to array if needed
+        // Transform database column names to match TypeScript types
         return (data || []).map((trip: any) => ({
             ...trip,
+            image: trip.hero_image, // Add image alias for backwards compatibility
             itinerary: (trip.itinerary || []).map((item: any) => ({
                 ...item,
                 title: item.activity,
@@ -185,6 +186,13 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
                 ...accom,
                 checkIn: accom.check_in,
                 checkOut: accom.check_out
+            })),
+            transport: (trip.transport || []).map((trans: any) => ({
+                ...trans,
+                from: trans.departure_location,
+                to: trans.arrival_location,
+                depart: trans.departure_time,
+                arrive: trans.arrival_time
             })),
             wallet: (trip.wallet || []).map((ticket: any) => ({
                 ...ticket,
@@ -199,9 +207,9 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
             })),
             expenses: (trip.expenses || []).map((exp: any) => ({
                 ...exp,
-                splitWith: exp.split_with // Map snake_case to camelCase
+                splitWith: exp.split_with
             })),
-            members: trip.members || ['Me'] // Default to ['Me'] if null
+            members: trip.members || ['Me']
         }));
     };
 
@@ -219,16 +227,22 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
 
     const addTripMutation = useMutation({
         mutationFn: async (tripData: any) => {
+            const insertData: any = {
+                user_id: user?.id,
+                title: tripData.title,
+                start_date: tripData.startDate,
+                end_date: tripData.endDate,
+                city: tripData.city,
+                hero_image: tripData.heroImage
+            };
+
+            // Add optional fields if provided
+            if (tripData.latitude !== undefined) insertData.latitude = tripData.latitude;
+            if (tripData.longitude !== undefined) insertData.longitude = tripData.longitude;
+
             const { data, error} = await supabase
                 .from('trips')
-                .insert([{
-                    user_id: user?.id,
-                    title: tripData.title,
-                    start_date: tripData.startDate,
-                    end_date: tripData.endDate,
-                    city: tripData.city,
-                    hero_image: tripData.heroImage
-                }] as any)
+                .insert([insertData])
                 .select()
                 .single();
             if (error) throw error;
@@ -255,6 +269,8 @@ export const TripProvider = ({ children }: { children: React.ReactNode }) => {
             if (updates.heroImage) dbUpdates.hero_image = updates.heroImage;
             if (updates.visa_status !== undefined) dbUpdates.visa_status = updates.visa_status;
             if (updates.visa_info !== undefined) dbUpdates.visa_info = updates.visa_info;
+            if (updates.latitude !== undefined) dbUpdates.latitude = updates.latitude;
+            if (updates.longitude !== undefined) dbUpdates.longitude = updates.longitude;
 
             const { data, error } = await supabase
                 .from('trips')
