@@ -5,6 +5,7 @@ import { z } from 'zod';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { Loader2 } from 'lucide-react';
 import { Input } from '../ui/input';
+import { PasswordInput } from '../ui/password-input';
 import { Button } from '../ui/button';
 
 const signInSchema = z.object({
@@ -65,9 +66,8 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSubmit, isLoading }) =
                 <label htmlFor="password" className="text-sm font-medium">
                     Password
                 </label>
-                <Input
+                <PasswordInput
                     id="password"
-                    type="password"
                     placeholder="Enter your password"
                     {...register('password')}
                     disabled={isLoading}

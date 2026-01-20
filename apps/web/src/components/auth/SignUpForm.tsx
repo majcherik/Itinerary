@@ -5,6 +5,7 @@ import { z } from 'zod';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { Loader2 } from 'lucide-react';
 import { Input } from '../ui/input';
+import { PasswordInput } from '../ui/password-input';
 import { Button } from '../ui/button';
 
 // EXISTING password schema from current auth page - strict validation
@@ -82,9 +83,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSubmit, isLoading }) =
                 <label htmlFor="signup-password" className="text-sm font-medium">
                     Password
                 </label>
-                <Input
+                <PasswordInput
                     id="signup-password"
-                    type="password"
                     placeholder="Create a strong password"
                     {...register('password')}
                     disabled={isLoading}
@@ -102,9 +102,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSubmit, isLoading }) =
                 <label htmlFor="confirm-password" className="text-sm font-medium">
                     Confirm Password
                 </label>
-                <Input
+                <PasswordInput
                     id="confirm-password"
-                    type="password"
                     placeholder="Confirm your password"
                     {...register('confirmPassword')}
                     disabled={isLoading}
