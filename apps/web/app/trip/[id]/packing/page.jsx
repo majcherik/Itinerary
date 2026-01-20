@@ -3,7 +3,7 @@
 import React from 'react';
 import { Circle, Plus, Check, ChevronsUpDown } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { useTrip } from '@itinerary/shared';
+import { useTrip, useCanEdit } from '@itinerary/shared';
 
 import Modal from '../../../../src/components/Modal';
 import { cn } from '../../../../src/lib/utils';
@@ -33,6 +33,7 @@ import { useOnClickOutside } from '@itinerary/shared';
 const PackingListContent = () => {
     const { id } = useParams();
     const { getTrip, addPackingItem, updatePackingItem, deletePackingItem, resetPackingList } = useTrip();
+    const { canEdit } = useCanEdit(id);
     const trip = getTrip(id);
     const items = trip?.packingList || [];
 
@@ -122,7 +123,9 @@ const PackingListContent = () => {
                                             />
                                             <span className={item.is_packed ? 'line-through text-text-secondary' : ''}>{item.item || item.text || item.name}</span>
                                         </div>
-                                        <AnimatedDeleteButton onClick={() => deleteItem(item.id)} className="text-text-secondary" />
+                                        {canEdit && (
+                                            <AnimatedDeleteButton onClick={() => deleteItem(item.id)} className="text-text-secondary" />
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -131,22 +134,24 @@ const PackingListContent = () => {
                 })}
             </div>
 
-            <div className="flex gap-4 mt-4">
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="btn btn-outline flex-1 flex items-center justify-center gap-2 border-dashed"
-                >
-                    <Plus size={20} />
-                    <span>Add Item</span>
-                </button>
-                <button
-                    onClick={handleReset}
-                    className="btn btn-outline flex-1 flex items-center justify-center gap-2 border-dashed text-text-secondary hover:text-warning hover:border-warning"
-                >
-                    <Circle size={20} />
-                    <span>Reset All</span>
-                </button>
-            </div>
+            {canEdit && (
+                <div className="flex gap-4 mt-4">
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="btn btn-outline flex-1 flex items-center justify-center gap-2 border-dashed"
+                    >
+                        <Plus size={20} />
+                        <span>Add Item</span>
+                    </button>
+                    <button
+                        onClick={handleReset}
+                        className="btn btn-outline flex-1 flex items-center justify-center gap-2 border-dashed text-text-secondary hover:text-warning hover:border-warning"
+                    >
+                        <Circle size={20} />
+                        <span>Reset All</span>
+                    </button>
+                </div>
+            )}
 
             <Modal
                 isOpen={isModalOpen}

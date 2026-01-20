@@ -3,7 +3,7 @@
 import React from 'react';
 import { Plane, Ticket, QrCode, Download, Plus, Copy, Check } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { useTrip, useCopyToClipboard } from '@itinerary/shared';
+import { useTrip, useCopyToClipboard, useCanEdit } from '@itinerary/shared';
 import QRCode from 'react-qr-code';
 import Modal from '../../../../src/components/Modal';
 import ProtectedRoute from '../../../../src/components/ProtectedRoute';
@@ -15,6 +15,7 @@ const WalletContent = () => {
     const { id } = useParams();
     const [copiedText, copy] = useCopyToClipboard();
     const { getTrip, addTicket, deleteTicket } = useTrip();
+    const { canEdit } = useCanEdit(id);
     const trip = getTrip(id);
     const tickets = trip?.wallet || [];
 
@@ -62,9 +63,11 @@ const WalletContent = () => {
 
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">My Wallet</h2>
-                <button onClick={() => setIsModalOpen(true)} className="btn btn-sm btn-primary flex items-center gap-2">
-                    <Plus size={16} /> Add Ticket
-                </button>
+                {canEdit && (
+                    <button onClick={() => setIsModalOpen(true)} className="btn btn-sm btn-primary flex items-center gap-2">
+                        <Plus size={16} /> Add Ticket
+                    </button>
+                )}
             </div>
 
             <div className="grid gap-6">
@@ -190,17 +193,19 @@ const WalletContent = () => {
                                     <Download size={16} />
                                     <span className="text-sm font-medium">Download PDF</span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <AnimatedDeleteButton
-                                        onClick={() => {
-                                            if (window.confirm('Are you sure you want to delete this ticket?')) {
-                                                deleteTicket(id, ticket.id);
-                                            }
-                                        }}
-                                        className="text-text-secondary"
-                                    />
-                                    <span className="text-sm font-medium text-text-secondary">Delete</span>
-                                </div>
+                                {canEdit && (
+                                    <div className="flex items-center gap-2">
+                                        <AnimatedDeleteButton
+                                            onClick={() => {
+                                                if (window.confirm('Are you sure you want to delete this ticket?')) {
+                                                    deleteTicket(id, ticket.id);
+                                                }
+                                            }}
+                                            className="text-text-secondary"
+                                        />
+                                        <span className="text-sm font-medium text-text-secondary">Delete</span>
+                                    </div>
+                                )}
                             </div>
                             <button
                                 onClick={() => {

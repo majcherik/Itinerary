@@ -4,13 +4,13 @@ import React from 'react';
 import Tabs from '../../../../src/components/Tabs';
 import { FileText, Upload, CheckCircle, AlertTriangle, Plus } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { useTrip } from '@itinerary/shared';
+import { useTrip, useCanEdit } from '@itinerary/shared';
 
 import ProtectedRoute from '../../../../src/components/ProtectedRoute';
 import { SidebarLayout } from '../../../../src/components/SidebarLayout';
 import Breadcrumbs from '../../../../src/components/Breadcrumbs';
 
-const VisaSection = ({ trip, updateTrip }) => {
+const VisaSection = ({ trip, updateTrip, canEdit }) => {
     const [visaInfo, setVisaInfo] = React.useState(trip.visa_info || '');
 
     React.useEffect(() => {
@@ -40,34 +40,38 @@ const VisaSection = ({ trip, updateTrip }) => {
                                 <p className="text-xs text-text-secondary">Mark your current status</p>
                             </div>
                         </div>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => updateTrip(trip.id, { visa_status: 'obtained' })}
-                                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${trip.visa_status === 'obtained' ? 'bg-success/10 border-success text-success' : 'border-border-color hover:bg-bg-secondary'}`}
-                            >
-                                Yes, I have it
-                            </button>
-                            <button
-                                onClick={() => updateTrip(trip.id, { visa_status: 'required' })}
-                                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${trip.visa_status === 'required' ? 'bg-warning/10 border-warning text-warning' : 'border-border-color hover:bg-bg-secondary'}`}
-                            >
-                                No / Not yet
-                            </button>
-                        </div>
+                        {canEdit && (
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => updateTrip(trip.id, { visa_status: 'obtained' })}
+                                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${trip.visa_status === 'obtained' ? 'bg-success/10 border-success text-success' : 'border-border-color hover:bg-bg-secondary'}`}
+                                >
+                                    Yes, I have it
+                                </button>
+                                <button
+                                    onClick={() => updateTrip(trip.id, { visa_status: 'required' })}
+                                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${trip.visa_status === 'required' ? 'bg-warning/10 border-warning text-warning' : 'border-border-color hover:bg-bg-secondary'}`}
+                                >
+                                    No / Not yet
+                                </button>
+                            </div>
+                        )}
                     </div>
 
-                    <div>
-                        <label className="text-sm font-medium mb-1 block">Visa Details / Notes</label>
-                        <textarea
-                            className="input min-h-[80px] mb-2"
-                            placeholder="e.g. Valid until Dec 2025, allows 90 days stay..."
-                            value={visaInfo}
-                            onChange={(e) => setVisaInfo(e.target.value)}
-                        />
-                        <div className="flex justify-end">
-                            <button onClick={handleSaveVisaInfo} className="btn btn-sm btn-primary">Save Details</button>
+                    {canEdit && (
+                        <div>
+                            <label className="text-sm font-medium mb-1 block">Visa Details / Notes</label>
+                            <textarea
+                                className="input min-h-[80px] mb-2"
+                                placeholder="e.g. Valid until Dec 2025, allows 90 days stay..."
+                                value={visaInfo}
+                                onChange={(e) => setVisaInfo(e.target.value)}
+                            />
+                            <div className="flex justify-end">
+                                <button onClick={handleSaveVisaInfo} className="btn btn-sm btn-primary">Save Details</button>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
 
@@ -103,7 +107,7 @@ const VisaSection = ({ trip, updateTrip }) => {
     );
 };
 
-const NotesSection = ({ trip, addNote }) => {
+const NotesSection = ({ trip, addNote, canEdit }) => {
     const [newNote, setNewNote] = React.useState({ title: '', content: '' });
     const [isAddingNote, setIsAddingNote] = React.useState(false);
     const notes = trip?.documents || [];
@@ -125,7 +129,7 @@ const NotesSection = ({ trip, addNote }) => {
         <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center">
                 <h3 className="font-bold text-lg">Destination Notes</h3>
-                {!isAddingNote && (
+                {canEdit && !isAddingNote && (
                     <button onClick={() => setIsAddingNote(true)} className="btn btn-sm btn-outline flex items-center gap-1 text-xs">
                         <Plus size={14} /> Add Note
                     </button>
@@ -175,13 +179,14 @@ const NotesSection = ({ trip, addNote }) => {
 const DocumentsContent = () => {
     const { id } = useParams();
     const { getTrip, addNote, updateTrip } = useTrip();
+    const { canEdit } = useCanEdit(id);
     const trip = getTrip(id);
 
     if (!trip) return <div>Loading...</div>;
 
     const tabs = [
-        { id: 'visa', label: 'Visas & Docs', content: <VisaSection trip={trip} updateTrip={updateTrip} /> },
-        { id: 'notes', label: 'Destination Info', content: <NotesSection trip={trip} addNote={addNote} /> },
+        { id: 'visa', label: 'Visas & Docs', content: <VisaSection trip={trip} updateTrip={updateTrip} canEdit={canEdit} /> },
+        { id: 'notes', label: 'Destination Info', content: <NotesSection trip={trip} addNote={addNote} canEdit={canEdit} /> },
     ];
 
     return (
