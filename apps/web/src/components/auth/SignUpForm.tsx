@@ -46,7 +46,9 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSubmit, isLoading }) =
     const [captchaToken, setCaptchaToken] = React.useState('');
 
     const { register, handleSubmit, formState: { errors } } = useForm<SignUpFormData>({
-        resolver: zodResolver(signUpSchema)
+        resolver: zodResolver(signUpSchema),
+        mode: 'onBlur',  // Validate when field loses focus
+        reValidateMode: 'onChange'  // Re-validate on change after first error
     });
 
     const handleFormSubmit = async (data: SignUpFormData) => {

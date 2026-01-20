@@ -29,7 +29,9 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSubmit, isLoading }) =
     const [captchaToken, setCaptchaToken] = React.useState('');
 
     const { register, handleSubmit, formState: { errors } } = useForm<SignInFormData>({
-        resolver: zodResolver(signInSchema)
+        resolver: zodResolver(signInSchema),
+        mode: 'onBlur',  // Validate when field loses focus
+        reValidateMode: 'onChange'  // Re-validate on change after first error
     });
 
     const handleFormSubmit = async (data: SignInFormData) => {

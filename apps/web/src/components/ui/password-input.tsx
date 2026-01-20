@@ -36,9 +36,9 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
                     tabIndex={-1}
                 >
                     {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                    ) : (
                         <Eye className="h-4 w-4" />
+                    ) : (
+                        <EyeOff className="h-4 w-4" />
                     )}
                 </button>
             </div>
