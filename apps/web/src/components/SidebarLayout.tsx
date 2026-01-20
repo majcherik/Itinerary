@@ -11,15 +11,9 @@ interface SidebarLayoutProps {
 }
 
 function SidebarLayoutContent({ children }: SidebarLayoutProps) {
-    const { open, isMobile } = useSidebar();
-
-    // Calculate margin-left based on sidebar state (desktop only)
-    const marginLeft = isMobile ? 0 : open ? '16rem' : '5rem';
-
     return (
         <main
-            className="min-h-svh flex-1 flex flex-col bg-background transition-[padding-left] duration-200 ease-linear"
-            style={{ paddingLeft: marginLeft }}
+            className="min-h-svh flex-1 flex flex-col bg-background"
         >
             <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 sticky top-0 z-[5]">
                 <SidebarTrigger className="-ml-1">
@@ -29,7 +23,7 @@ function SidebarLayoutContent({ children }: SidebarLayoutProps) {
                 <span className="text-sm text-muted-foreground mr-auto">Toggle Sidebar</span>
                 <div className="flex-1" />
             </header>
-            <div className="flex-1 p-4 overflow-auto">
+            <div className="flex-1 px-4 py-4 overflow-auto">
                 {children}
             </div>
             <FooterBlock />
